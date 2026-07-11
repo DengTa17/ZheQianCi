@@ -3,12 +3,621 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>折千词 · 千词可折，一词一心</title>
-  <meta http-equiv="refresh" content="0; url=./折千词.html">
-  <link rel="canonical" href="./折千词.html">
-  <script>location.replace('./折千词.html');</script>
+  <meta name="theme-color" content="#101313">
+  <meta name="description" content="折千词：把拍照识词、AI 校准与折页复习放进一个单文件背词工具。">
+  <title>折千词｜DT灯塔</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <style>
+    :root {
+      --ink: #101313;
+      --ink-soft: #1a1e1d;
+      --paper: #f3f2ee;
+      --paper-deep: #e6e4de;
+      --white: #ffffff;
+      --muted: #a6aca8;
+      --line-dark: rgba(255,255,255,.16);
+      --line-light: rgba(16,19,19,.16);
+      --signal: #f2d35c;
+      --mint: #64d7b2;
+      --coral: #ef7668;
+      --content: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--white);
+      background: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      line-height: 1.65;
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+    body::selection { color: var(--ink); background: var(--signal); }
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    img { display: block; width: 100%; }
+
+    .scroll-progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      z-index: 100;
+      width: 0;
+      height: 3px;
+      background: var(--signal);
+    }
+
+    .site-nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 80;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid transparent;
+      transition: background .28s ease, border-color .28s ease;
+    }
+    .site-nav.scrolled {
+      background: rgba(16,19,19,.88);
+      border-color: var(--line-dark);
+      backdrop-filter: blur(16px);
+    }
+    .nav-inner {
+      width: min(calc(100% - 48px), var(--content));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 750;
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background: var(--signal);
+      border-radius: 4px;
+      font-size: 18px;
+      font-family: Georgia, serif;
+    }
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links > a:not(.nav-cta) { color: #d6dad7; font-size: 14px; }
+    .nav-links > a:not(.nav-cta):hover { color: var(--signal); }
+    .nav-cta, .primary-cta, .secondary-cta {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 18px;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .nav-cta, .primary-cta { color: var(--ink); background: var(--signal); }
+    .nav-cta:hover, .primary-cta:hover { transform: translateY(-2px); background: #ffe171; }
+
+    .hero {
+      position: relative;
+      min-height: 88svh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line-dark);
+      background: var(--ink) url("assets/zheqianci-dashboard.png") center 18% / cover no-repeat;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(10,13,12,.72);
+    }
+    .beam {
+      position: absolute;
+      z-index: 1;
+      top: 12%;
+      right: -8%;
+      width: 58%;
+      height: 36%;
+      background: rgba(242,211,92,.17);
+      clip-path: polygon(100% 5%, 100% 95%, 0 56%);
+      filter: blur(8px);
+      transform-origin: 100% 50%;
+      animation: sweep 9s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    @keyframes sweep {
+      from { transform: rotate(-4deg); opacity: .45; }
+      to { transform: rotate(5deg); opacity: .82; }
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      width: min(calc(100% - 48px), var(--content));
+      margin: 92px auto 58px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--signal);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 34px; height: 2px; background: currentColor; }
+    .hero h1 {
+      max-width: 920px;
+      margin: 28px 0 20px;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 88px;
+      line-height: 1;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+    .hero h1 span { color: var(--signal); }
+    .hero-lead {
+      max-width: 660px;
+      margin: 0;
+      color: #dce1dd;
+      font-size: 20px;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+    .primary-cta, .secondary-cta { min-height: 50px; padding: 0 23px; }
+    .secondary-cta { border-color: rgba(255,255,255,.36); color: var(--white); background: rgba(16,19,19,.38); }
+    .secondary-cta:hover { transform: translateY(-2px); border-color: var(--white); }
+    .scroll-cue {
+      position: absolute;
+      z-index: 2;
+      right: max(24px, calc((100vw - var(--content)) / 2));
+      bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #c8ceca;
+      font-size: 12px;
+    }
+    .scroll-cue::after { content: ""; width: 48px; height: 1px; background: var(--signal); animation: breathe 1.6s ease-in-out infinite; }
+    @keyframes breathe { 50% { transform: scaleX(.45); transform-origin: right; } }
+
+    .signal-strip {
+      min-height: 112px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--line-dark);
+      background: var(--ink-soft);
+    }
+    .signal-item {
+      padding: 26px 34px;
+      border-right: 1px solid var(--line-dark);
+    }
+    .signal-item:last-child { border-right: 0; }
+    .signal-item strong { display: block; color: var(--signal); font-family: Georgia, serif; font-size: 30px; line-height: 1.1; }
+    .signal-item span { color: var(--muted); font-size: 13px; }
+
+    .section { padding: 120px 24px; }
+    .section-inner { width: min(100%, var(--content)); margin: 0 auto; }
+    .section-kicker { margin: 0 0 18px; color: var(--coral); font-size: 13px; font-weight: 750; }
+    .section-title {
+      max-width: 850px;
+      margin: 0;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 56px;
+      line-height: 1.14;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .section-copy { max-width: 660px; margin: 24px 0 0 auto; color: #505754; font-size: 18px; }
+
+    .manifesto { color: var(--ink); background: var(--paper); }
+    .manifesto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; }
+    .manifesto .section-title em { color: var(--coral); font-style: normal; }
+    .manifesto-note { border-left: 3px solid var(--signal); padding-left: 20px; color: #505754; }
+
+    .demo-section { background: #121615; }
+    .demo-head { display: flex; justify-content: space-between; gap: 48px; align-items: end; margin-bottom: 54px; }
+    .demo-head p { max-width: 460px; color: var(--muted); margin: 0; }
+    .demo-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+    .demo-item { grid-column: span 6; }
+    .demo-item:first-child { grid-column: span 12; }
+    .demo-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 1px solid var(--line-dark);
+      border-radius: 6px;
+      background: #202523 center / cover no-repeat;
+      isolation: isolate;
+    }
+    .demo-item:first-child .demo-frame { aspect-ratio: 21 / 9; background-image: url("assets/zheqianci-ocr.png"); }
+    .demo-item:nth-child(2) .demo-frame { background-image: url("assets/zheqianci-dashboard.png"); }
+    .demo-item:nth-child(3) .demo-frame { background-image: url("assets/zheqianci-review.png"); }
+    .demo-frame::before { content: ""; position: absolute; inset: 0; z-index: -1; background: rgba(8,10,10,.62); transition: background .35s ease; }
+    .demo-item:hover .demo-frame::before { background: rgba(8,10,10,.45); }
+    .demo-placeholder {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+    .play-mark {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 16px;
+      color: var(--ink);
+      background: var(--signal);
+      border-radius: 50%;
+      transition: transform .3s ease;
+    }
+    .demo-item:hover .play-mark { transform: scale(1.08); }
+    .demo-placeholder strong { display: block; font-size: 18px; }
+    .demo-placeholder span { display: block; margin-top: 7px; color: #c2c9c4; font-size: 13px; }
+    .demo-caption { display: flex; justify-content: space-between; gap: 16px; margin-top: 14px; }
+    .demo-caption strong { font-size: 15px; }
+    .demo-caption span { color: var(--muted); font-size: 12px; font-family: Consolas, monospace; }
+
+    .feature-section { padding: 0; background: var(--paper); color: var(--ink); }
+    .feature-band {
+      min-height: 620px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+      border-bottom: 1px solid var(--line-light);
+    }
+    .feature-band:nth-child(even) { grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr); }
+    .feature-band:nth-child(even) .feature-media { order: 2; }
+    .feature-media { min-height: 100%; overflow: hidden; background: #d6d5cf; }
+    .feature-media img { height: 100%; object-fit: cover; object-position: center top; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+    .feature-band:hover .feature-media img { transform: scale(1.025); }
+    .feature-copy { display: flex; flex-direction: column; justify-content: center; padding: 72px max(36px, 8vw); }
+    .feature-index { color: var(--coral); font-family: Georgia, serif; font-size: 18px; }
+    .feature-copy h3 { margin: 18px 0; font-family: Georgia, "Songti SC", serif; font-size: 42px; line-height: 1.18; }
+    .feature-copy p { color: #555d59; font-size: 17px; }
+    .feature-points { margin: 26px 0 0; padding: 0; list-style: none; }
+    .feature-points li { display: flex; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line-light); font-size: 14px; }
+    .feature-points i { color: #198b6d; }
+
+    .creator {
+      position: relative;
+      min-height: 640px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line-dark);
+      background: #161b19;
+    }
+    .creator::after {
+      content: "DT";
+      position: absolute;
+      right: -20px;
+      bottom: -130px;
+      color: rgba(255,255,255,.035);
+      font-family: Georgia, serif;
+      font-size: 420px;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .creator-grid { position: relative; z-index: 1; display: grid; grid-template-columns: .7fr 1.3fr; gap: 80px; align-items: center; }
+    .creator-id { border-top: 1px solid var(--line-dark); padding-top: 18px; color: var(--muted); }
+    .creator-id strong { display: block; color: var(--signal); font-size: 28px; }
+    .creator-quote { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: 48px; line-height: 1.25; }
+    .creator-quote span { color: var(--mint); }
+
+    .final-cta { color: var(--ink); background: var(--signal); text-align: center; }
+    .final-cta .section-title { margin-inline: auto; max-width: 960px; }
+    .final-cta p { margin: 22px auto 34px; max-width: 600px; }
+    .final-cta .primary-cta { color: var(--white); background: var(--ink); }
+    .final-cta .primary-cta:hover { background: #292e2c; }
+
+    footer {
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      border-top: 1px solid rgba(16,19,19,.2);
+      color: var(--ink);
+      background: var(--signal);
+    }
+    .footer-inner { width: min(calc(100% - 48px), var(--content)); margin: 0 auto; display: flex; justify-content: space-between; gap: 24px; font-size: 13px; }
+
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 68px; }
+      .section-title { font-size: 46px; }
+      .manifesto-grid, .creator-grid { grid-template-columns: 1fr; gap: 36px; }
+      .feature-band, .feature-band:nth-child(even) { grid-template-columns: 1fr; }
+      .feature-band:nth-child(even) .feature-media { order: 0; }
+      .feature-media { min-height: 420px; }
+      .signal-strip { grid-template-columns: repeat(2, 1fr); }
+      .signal-item:nth-child(2) { border-right: 0; }
+      .signal-item:nth-child(-n+2) { border-bottom: 1px solid var(--line-dark); }
+    }
+
+    @media (max-width: 640px) {
+      .site-nav { height: 64px; }
+      .nav-inner { width: min(calc(100% - 28px), var(--content)); }
+      .nav-links > a:not(.nav-cta) { display: none; }
+      .brand small { display: none; }
+      .nav-cta { min-height: 38px; padding-inline: 14px; }
+      .hero { min-height: 84svh; background-position: 38% top; }
+      .hero-inner { width: calc(100% - 32px); margin-top: 86px; }
+      .hero h1 { font-size: 54px; line-height: 1.05; }
+      .hero-lead { font-size: 17px; }
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .scroll-cue { display: none; }
+      .signal-item { padding: 22px 18px; }
+      .signal-item strong { font-size: 25px; }
+      .section { padding: 82px 18px; }
+      .section-title { font-size: 38px; }
+      .section-copy { font-size: 16px; margin-left: 0; }
+      .demo-head { display: block; }
+      .demo-head p { margin-top: 18px; }
+      .demo-item, .demo-item:first-child { grid-column: span 12; }
+      .demo-item:first-child .demo-frame { aspect-ratio: 16 / 10; }
+      .demo-caption { display: block; }
+      .demo-caption span { margin-top: 4px; display: block; }
+      .feature-media { min-height: 300px; }
+      .feature-copy { padding: 56px 22px; }
+      .feature-copy h3 { font-size: 34px; }
+      .creator { min-height: 560px; }
+      .creator-quote { font-size: 36px; }
+      .creator::after { font-size: 250px; bottom: -60px; }
+      .footer-inner { width: calc(100% - 32px); display: block; }
+      .footer-inner span { display: block; margin-top: 6px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
 </head>
 <body>
-  <p>正在进入 <a href="./折千词.html">折千词</a>…</p>
+  <div class="scroll-progress" id="scroll-progress"></div>
+  <nav class="site-nav" id="site-nav" aria-label="主导航">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="折千词首页">
+        <span class="brand-mark">折</span>
+        <span>折千词<small>DT灯塔作品</small></span>
+      </a>
+      <div class="nav-links">
+        <a href="#demo">演示</a>
+        <a href="#details">细节</a>
+        <a href="#creator">关于</a>
+        <a class="nav-cta" href="折千词.html">打开应用 <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <section class="hero">
+      <div class="beam" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <span class="eyebrow">DT Lighthouse · Independent Project</span>
+        <h1>折千词<span>。</span></h1>
+        <p class="hero-lead">拍下纸上的单词，让 AI 整理；再用一页真实的翻动，把它留在记忆里。</p>
+        <div class="hero-actions">
+          <a class="primary-cta" href="折千词.html">立即体验 <i data-lucide="move-up-right" aria-hidden="true"></i></a>
+          <a class="secondary-cta" href="#demo">观看演示 <i data-lucide="play" aria-hidden="true"></i></a>
+        </div>
+      </div>
+      <div class="scroll-cue">SCROLL TO EXPLORE</div>
+    </section>
+
+    <section class="signal-strip" aria-label="产品亮点">
+      <div class="signal-item"><strong data-count="2">0</strong><span>模型协作识别与校准</span></div>
+      <div class="signal-item"><strong data-count="30">0</strong><span>单批 AI 安全上限</span></div>
+      <div class="signal-item"><strong data-count="100">0</strong><span>浏览器本地保存百分比</span></div>
+      <div class="signal-item"><strong>1 HTML</strong><span>打开、使用、分享</span></div>
+    </section>
+
+    <section class="section manifesto">
+      <div class="section-inner manifesto-grid reveal">
+        <div>
+          <p class="section-kicker">WHY ZHEQIANCI</p>
+          <h2 class="section-title">背词不缺方法，缺的是一条<em>顺手</em>的路径。</h2>
+        </div>
+        <div>
+          <p class="section-copy">纸上的笔记、手机里的照片、零散的释义，都不该成为重新录入的负担。折千词把识别、校准、例句与复习串在同一处，让注意力重新回到单词本身。</p>
+          <p class="manifesto-note">不追求复杂的学习仪式。拍下来，确认它，翻开它。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section demo-section" id="demo">
+      <div class="section-inner">
+        <div class="demo-head reveal">
+          <div>
+            <p class="section-kicker">DEMO REEL</p>
+            <h2 class="section-title">三段演示，讲清一次完整使用。</h2>
+          </div>
+          <p>以下位置已按最终剪辑节奏留好。录制时保持同一窗口尺寸，鼠标动作放慢，转场会更干净。</p>
+        </div>
+        <div class="demo-grid">
+          <article class="demo-item reveal">
+            <div class="demo-frame">
+              <div class="demo-placeholder">
+                <div>
+                  <span class="play-mark"><i data-lucide="camera" aria-hidden="true"></i></span>
+                  <strong>演示 01 · 从照片到可编辑词表</strong>
+                  <span>建议录制：上传 test.jpg → GLM-OCR → DeepSeek 校准｜10–15 秒</span>
+                </div>
+              </div>
+            </div>
+            <div class="demo-caption"><strong>拍一次，整理两遍。</strong><span>assets/demo-ocr.mp4</span></div>
+          </article>
+          <article class="demo-item reveal">
+            <div class="demo-frame">
+              <div class="demo-placeholder">
+                <div>
+                  <span class="play-mark"><i data-lucide="sparkles" aria-hidden="true"></i></span>
+                  <strong>演示 02 · AI 增量解析</strong>
+                  <span>建议录制：词典补全 → 切换 AI → 30 词分批进度｜12–18 秒</span>
+                </div>
+              </div>
+            </div>
+            <div class="demo-caption"><strong>已有内容，不再重复生成。</strong><span>assets/demo-ai.mp4</span></div>
+          </article>
+          <article class="demo-item reveal">
+            <div class="demo-frame">
+              <div class="demo-placeholder">
+                <div>
+                  <span class="play-mark"><i data-lucide="book-open" aria-hidden="true"></i></span>
+                  <strong>演示 03 · 电子书折页复习</strong>
+                  <span>建议录制：遮英文 → 拖动页角 → 回弹 / 完成翻页｜8–12 秒</span>
+                </div>
+              </div>
+            </div>
+            <div class="demo-caption"><strong>不是揭晓答案，是亲手翻开它。</strong><span>assets/demo-review.mp4</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-section" id="details">
+      <article class="feature-band">
+        <div class="feature-media"><img src="assets/zheqianci-ocr.png" alt="折千词拍照导入与双模型选择界面"></div>
+        <div class="feature-copy reveal">
+          <span class="feature-index">01 / 双模型识别</span>
+          <h3>先看清，再整理干净。</h3>
+          <p>智谱负责读取手写版面，DeepSeek 负责去重、纠错与中英配对。识别失败仍保留可编辑结果，不把一次网络波动变成全部重来。</p>
+          <ul class="feature-points">
+            <li><i data-lucide="scan-text" aria-hidden="true"></i> 多栏手写词表识别</li>
+            <li><i data-lucide="list-checks" aria-hidden="true"></i> 重复行与 OCR 拼写修复</li>
+            <li><i data-lucide="pencil-line" aria-hidden="true"></i> 导入前逐项确认</li>
+          </ul>
+        </div>
+      </article>
+      <article class="feature-band">
+        <div class="feature-media"><img src="assets/zheqianci-dashboard.png" alt="折千词学习主页与数据概览"></div>
+        <div class="feature-copy reveal">
+          <span class="feature-index">02 / 国内可用</span>
+          <h3>词典和发音，打开就能用。</h3>
+          <p>例句优先来自有道在线词典，发音优先调用本地语音并提供国内网络可访问的备用来源。AI 只补缺失内容，减少等待和消耗。</p>
+          <ul class="feature-points">
+            <li><i data-lucide="languages" aria-hidden="true"></i> 双语例句与英美音标</li>
+            <li><i data-lucide="volume-2" aria-hidden="true"></i> 本地语音优先</li>
+            <li><i data-lucide="gauge" aria-hidden="true"></i> 30 词分批、双路并行</li>
+          </ul>
+        </div>
+      </article>
+      <article class="feature-band">
+        <div class="feature-media"><img src="assets/zheqianci-review.png" alt="折千词电子书翻页式复习界面"></div>
+        <div class="feature-copy reveal">
+          <span class="feature-index">03 / 折页复习</span>
+          <h3>记忆，不必只靠点击按钮。</h3>
+          <p>遮住英文或中文，拖动页角，让答案从折痕后逐步出现。高光、纸背和阴影跟随手势，复习动作因此多了一点真实的触感。</p>
+          <ul class="feature-points">
+            <li><i data-lucide="book-copy" aria-hidden="true"></i> 中英文双向遮挡</li>
+            <li><i data-lucide="mouse-pointer-2" aria-hidden="true"></i> 拖动、回弹与完成阈值</li>
+            <li><i data-lucide="database" aria-hidden="true"></i> 学习记录保存在本机</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <section class="section creator" id="creator">
+      <div class="section-inner creator-grid reveal">
+        <div class="creator-id">
+          <span>CREATED BY</span>
+          <strong>DT灯塔</strong>
+          <p>愿人生不再迷茫，世界变得清晰。</p>
+        </div>
+        <blockquote class="creator-quote">“把复杂藏在背后，<br>把<span>清晰</span>留给正在使用的人。”</blockquote>
+      </div>
+    </section>
+
+    <section class="section final-cta">
+      <div class="section-inner reveal">
+        <p class="section-kicker">START FOLDING</p>
+        <h2 class="section-title">下一张照片，可以直接变成你的单词书。</h2>
+        <p>无需安装。一个 HTML，保存你的词、例句和每一次复习。</p>
+        <a class="primary-cta" href="折千词.html">打开折千词 <i data-lucide="arrow-right" aria-hidden="true"></i></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <strong>折千词 · DT灯塔</strong>
+      <span>千词可折，一词一心 · 2026</span>
+      <a href="https://github.com/DengTa17/ZheQianCi" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </div>
+  </footer>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+
+      const nav = document.getElementById('site-nav');
+      const progress = document.getElementById('scroll-progress');
+      const updateScroll = () => {
+        const y = window.scrollY;
+        const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        nav.classList.toggle('scrolled', y > 30);
+        progress.style.width = `${Math.min(100, y / max * 100)}%`;
+      };
+      updateScroll();
+      window.addEventListener('scroll', updateScroll, { passive: true });
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: .14 });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+      const countObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          const end = Number(el.dataset.count || 0);
+          const started = performance.now();
+          const tick = now => {
+            const p = Math.min(1, (now - started) / 900);
+            el.textContent = String(Math.round(end * (1 - Math.pow(1 - p, 3))));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+          countObserver.unobserve(el);
+        });
+      }, { threshold: .5 });
+      document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
+
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const hero = document.querySelector('.hero');
+        const beam = document.querySelector('.beam');
+        hero.addEventListener('pointermove', event => {
+          const x = event.clientX / Math.max(1, window.innerWidth) - .5;
+          const y = event.clientY / Math.max(1, window.innerHeight) - .5;
+          beam.style.translate = `${x * 16}px ${y * 10}px`;
+        });
+      }
+    });
+  </script>
 </body>
 </html>
