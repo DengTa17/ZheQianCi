@@ -1,0 +1,6 @@
+.trae/
+test.jpg
+*.local.html
+.dev.vars*
+.env*
+.wrangler/
