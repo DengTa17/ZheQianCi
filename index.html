@@ -3489,6 +3489,113 @@ select.input-glass {
   flex-wrap: wrap;
 }
 
+/* ===== Local folder backup ===== */
+.storage-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem 0 1rem;
+}
+
+.storage-intro h3 {
+  margin-bottom: 0.45rem;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+}
+
+.storage-intro p,
+.storage-note {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.storage-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.storage-status-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.storage-status-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+.storage-status.connected .storage-status-dot {
+  background: #55a86a;
+  box-shadow: 0 0 0 4px rgba(85, 168, 106, 0.14);
+}
+
+.storage-status-copy {
+  min-width: 0;
+}
+
+.storage-status-title {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 650;
+}
+
+.storage-status-detail {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--text-tertiary);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.storage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.storage-auto-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  cursor: pointer;
+}
+
+.storage-auto-row input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+}
+
+.storage-auto-copy strong,
+.storage-auto-copy small {
+  display: block;
+}
+
+.storage-auto-copy small {
+  margin-top: 0.2rem;
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}
+
+.storage-note {
+  padding-left: 0.85rem;
+  border-left: 3px solid var(--accent);
+  font-size: 0.86rem;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 640px) {
   .preview-item {
@@ -3906,6 +4013,7 @@ select.input-glass {
       <div class="import-tabs">
         <button class="import-tab active" data-tab="manual">手动导入</button>
         <button class="import-tab" data-tab="ocr">拍照导入</button>
+        <button class="import-tab" data-tab="storage">数据与备份</button>
       </div>
       <div class="import-content">
         <!-- Example sentence source -->
@@ -3999,6 +4107,53 @@ select.input-glass {
           </div>
         </div>
 
+        <!-- Local folder backup panel -->
+        <div class="import-panel" data-panel="storage">
+          <div class="storage-panel">
+            <div class="storage-intro">
+              <h3>本地文件夹自动备份</h3>
+              <p>选择电脑上的文件夹后，折千词会在浏览器本地存储之外，同步维护一份可恢复的数据文件。</p>
+            </div>
+
+            <div class="storage-status" id="storage-status">
+              <div class="storage-status-main">
+                <span class="storage-status-dot" aria-hidden="true"></span>
+                <span class="storage-status-copy">
+                  <span class="storage-status-title" id="storage-status-title">尚未连接文件夹</span>
+                  <span class="storage-status-detail" id="storage-status-detail">数据目前仅保存在此浏览器中</span>
+                </span>
+              </div>
+              <button class="btn-glass small" id="storage-select-folder">选择文件夹</button>
+            </div>
+
+            <label class="storage-auto-row" for="storage-auto-backup">
+              <span class="storage-auto-copy">
+                <strong>自动备份</strong>
+                <small>单词本或学习记录发生变化后，自动更新备份文件。</small>
+              </span>
+              <input type="checkbox" id="storage-auto-backup" disabled>
+            </label>
+
+            <div class="storage-actions">
+              <button class="btn-glass" id="storage-backup-now" disabled>立即备份</button>
+              <button class="btn-glass secondary" id="storage-restore" disabled>从备份恢复</button>
+              <button class="btn-glass secondary" id="storage-disconnect" disabled>断开文件夹</button>
+            </div>
+
+            <p class="storage-note" id="storage-note">建议选择“文档”中的固定文件夹。浏览器或电脑管家清理网站数据时，这个普通文件不会一起被删除。</p>
+
+            <div class="data-management">
+              <h4>手动备份</h4>
+              <div class="data-actions">
+                <button class="btn-glass secondary small" id="data-export-btn">导出备份</button>
+                <button class="btn-glass secondary small" id="data-import-file-btn">导入备份</button>
+                <input type="file" id="data-import-file" accept=".json" hidden>
+                <button class="btn-glass danger small" id="data-clear-all-btn">清空所有</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Import Preview -->
         <div class="import-preview hidden" id="import-preview">
           <h4>导入预览</h4>
@@ -4014,16 +4169,6 @@ select.input-glass {
           </div>
         </div>
 
-        <!-- Data Management -->
-        <div class="data-management">
-          <h4>数据管理</h4>
-          <div class="data-actions">
-            <button class="btn-glass secondary small" id="data-export-btn">导出备份</button>
-            <button class="btn-glass secondary small" id="data-import-file-btn">导入备份</button>
-            <input type="file" id="data-import-file" accept=".json" hidden>
-            <button class="btn-glass danger small" id="data-clear-all-btn">清空所有</button>
-          </div>
-        </div>
       </div>
     </section>
   </div>
@@ -5896,6 +6041,7 @@ class WordDatabase {
   _write() {
     try {
       localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(this.data));
+      window.backupService?.scheduleWrite(this.data);
     } catch (e) {
       console.warn('写入存储失败:', e);
     }
@@ -6088,8 +6234,11 @@ class WordDatabase {
   async exportData() {
     await this.init();
     return JSON.stringify({
+      version: 2,
+      exportedAt: Date.now(),
       words: this.data.words,
-      books: this.data.books
+      books: this.data.books,
+      records: this.data.records || []
     }, null, 2);
   }
 
@@ -6100,8 +6249,10 @@ class WordDatabase {
 
     this.data.books = [];
     this.data.words = [];
+    this.data.records = [];
     this.data.nextBookId = 1;
     this.data.nextWordId = 1;
+    this.data.nextRecordId = 1;
 
     const bookMap = new Map();
     if (data.books && Array.isArray(data.books)) {
@@ -6119,9 +6270,11 @@ class WordDatabase {
       bookMap.set(undefined, defaultId);
     }
 
+    const wordMap = new Map();
     for (const item of data.words) {
+      const newWordId = this.data.nextWordId++;
       this.data.words.push({
-        id: this.data.nextWordId++,
+        id: newWordId,
         word: item.word || '',
         meaning: item.meaning || '',
         sentence: item.sentence || '',
@@ -6139,6 +6292,20 @@ class WordDatabase {
         lastReviewed: item.lastReviewed || null,
         createdAt: item.createdAt || Date.now()
       });
+      wordMap.set(item.id, newWordId);
+    }
+
+    if (Array.isArray(data.records)) {
+      for (const record of data.records) {
+        const mappedWordId = wordMap.get(record.wordId);
+        if (!mappedWordId) continue;
+        this.data.records.push({
+          id: this.data.nextRecordId++,
+          wordId: mappedWordId,
+          isCorrect: !!record.isCorrect,
+          date: record.date || Date.now()
+        });
+      }
     }
     this._write();
   }
@@ -6173,6 +6340,255 @@ class WordDatabase {
 }
 
 const db = new WordDatabase();
+
+
+/* ===== Local folder backup ===== */
+
+const AUTO_BACKUP_KEY = 'vocab_auto_folder_backup';
+const LAST_BACKUP_KEY = 'vocab_last_folder_backup';
+const BACKUP_FILE_NAME = '折千词数据.json';
+
+class BackupHandleStore {
+  open() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('zheqianci_backup_handles', 1);
+      request.onupgradeneeded = () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains('handles')) database.createObjectStore('handles');
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async get() {
+    const database = await this.open();
+    return new Promise((resolve, reject) => {
+      const request = database.transaction('handles', 'readonly').objectStore('handles').get('backup-directory');
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    }).finally(() => database.close());
+  }
+
+  async set(handle) {
+    const database = await this.open();
+    return new Promise((resolve, reject) => {
+      const request = database.transaction('handles', 'readwrite').objectStore('handles').put(handle, 'backup-directory');
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    }).finally(() => database.close());
+  }
+
+  async clear() {
+    const database = await this.open();
+    return new Promise((resolve, reject) => {
+      const request = database.transaction('handles', 'readwrite').objectStore('handles').delete('backup-directory');
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    }).finally(() => database.close());
+  }
+}
+
+class LocalBackupService {
+  constructor() {
+    this.handleStore = new BackupHandleStore();
+    this.directoryHandle = null;
+    this.writeTimer = 0;
+    this.writing = false;
+  }
+
+  isSupported() {
+    return 'showDirectoryPicker' in window && 'indexedDB' in window;
+  }
+
+  isAutoEnabled() {
+    return localStorage.getItem(AUTO_BACKUP_KEY) === 'true';
+  }
+
+  setAutoEnabled(enabled) {
+    localStorage.setItem(AUTO_BACKUP_KEY, enabled ? 'true' : 'false');
+  }
+
+  async init() {
+    if (!this.isSupported()) {
+      await this.updateUI();
+      return;
+    }
+    try {
+      this.directoryHandle = await this.handleStore.get();
+    } catch (err) {
+      console.warn('读取备份文件夹授权失败:', err);
+    }
+    await this.updateUI();
+  }
+
+  bindUI() {
+    document.getElementById('storage-select-folder')?.addEventListener('click', () => this.chooseFolder());
+    document.getElementById('storage-backup-now')?.addEventListener('click', () => this.backupNow(true));
+    document.getElementById('storage-restore')?.addEventListener('click', () => this.restore());
+    document.getElementById('storage-disconnect')?.addEventListener('click', () => this.disconnect());
+    document.getElementById('storage-auto-backup')?.addEventListener('change', async (event) => {
+      if (event.target.checked && !this.directoryHandle) {
+        event.target.checked = false;
+        await this.chooseFolder();
+        return;
+      }
+      this.setAutoEnabled(event.target.checked);
+      if (event.target.checked) await this.backupNow(false);
+      await this.updateUI();
+    });
+    this.init();
+  }
+
+  async ensurePermission(requestPermission = false) {
+    const handle = this.directoryHandle;
+    if (!handle) return false;
+    const options = { mode: 'readwrite' };
+    if ((await handle.queryPermission(options)) === 'granted') return true;
+    return requestPermission && (await handle.requestPermission(options)) === 'granted';
+  }
+
+  async chooseFolder() {
+    if (!this.isSupported()) {
+      showToast('当前浏览器不支持文件夹自动备份，请使用桌面版 Chrome 或 Edge', 'warning');
+      return;
+    }
+    try {
+      const handle = await window.showDirectoryPicker({
+        id: 'zheqianci-backup',
+        mode: 'readwrite',
+        startIn: 'documents'
+      });
+      this.directoryHandle = handle;
+      await this.handleStore.set(handle);
+      this.setAutoEnabled(true);
+      try { await navigator.storage?.persist?.(); } catch {}
+      await this.backupNow(false);
+      showToast('已连接备份文件夹', 'success');
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        console.warn('选择备份文件夹失败:', err);
+        showToast('无法连接该文件夹', 'error');
+      }
+    }
+    await this.updateUI();
+  }
+
+  scheduleWrite(data) {
+    if (!this.directoryHandle || !this.isAutoEnabled()) return;
+    clearTimeout(this.writeTimer);
+    this.writeTimer = setTimeout(() => this.writeSnapshot(data, false), 1500);
+  }
+
+  async backupNow(notify = true) {
+    await db.init();
+    const allowed = await this.ensurePermission(true);
+    if (!allowed) {
+      if (notify) showToast('请重新授权备份文件夹', 'warning');
+      await this.updateUI();
+      return false;
+    }
+    const ok = await this.writeSnapshot(db.data, notify);
+    await this.updateUI();
+    return ok;
+  }
+
+  async writeSnapshot(data, notify = false) {
+    if (this.writing || !this.directoryHandle) return false;
+    this.writing = true;
+    try {
+      const fileHandle = await this.directoryHandle.getFileHandle(BACKUP_FILE_NAME, { create: true });
+      const writable = await fileHandle.createWritable();
+      const payload = JSON.stringify({
+        version: 2,
+        exportedAt: Date.now(),
+        books: data.books || [],
+        words: data.words || [],
+        records: data.records || []
+      }, null, 2);
+      await writable.write(payload);
+      await writable.close();
+      localStorage.setItem(LAST_BACKUP_KEY, String(Date.now()));
+      if (notify) showToast('备份已更新', 'success');
+      return true;
+    } catch (err) {
+      console.warn('自动备份失败:', err);
+      if (notify) showToast('备份失败，请检查文件夹权限', 'error');
+      return false;
+    } finally {
+      this.writing = false;
+    }
+  }
+
+  async restore() {
+    if (!(await this.ensurePermission(true))) {
+      showToast('请重新授权备份文件夹', 'warning');
+      return;
+    }
+    try {
+      const fileHandle = await this.directoryHandle.getFileHandle(BACKUP_FILE_NAME);
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      const confirmed = await showConfirm('确定从文件夹备份恢复吗？当前浏览器中的单词本将被替换。');
+      if (!confirmed) return;
+      await db.importData(text);
+      showToast('恢复成功，正在刷新', 'success');
+      setTimeout(() => location.reload(), 500);
+    } catch (err) {
+      console.warn('恢复备份失败:', err);
+      showToast(err?.name === 'NotFoundError' ? '该文件夹中还没有折千词数据.json' : '备份文件读取失败', 'error');
+    }
+  }
+
+  async disconnect() {
+    const confirmed = await showConfirm('断开后不会删除电脑里的备份文件，确定继续吗？');
+    if (!confirmed) return;
+    clearTimeout(this.writeTimer);
+    this.directoryHandle = null;
+    this.setAutoEnabled(false);
+    try { await this.handleStore.clear(); } catch {}
+    await this.updateUI();
+    showToast('已断开备份文件夹');
+  }
+
+  async updateUI() {
+    const status = document.getElementById('storage-status');
+    const title = document.getElementById('storage-status-title');
+    const detail = document.getElementById('storage-status-detail');
+    const selectButton = document.getElementById('storage-select-folder');
+    const backupButton = document.getElementById('storage-backup-now');
+    const restoreButton = document.getElementById('storage-restore');
+    const disconnectButton = document.getElementById('storage-disconnect');
+    const autoToggle = document.getElementById('storage-auto-backup');
+    const connected = !!this.directoryHandle;
+    const supported = this.isSupported();
+
+    status?.classList.toggle('connected', connected);
+    if (title) title.textContent = !supported
+      ? '当前浏览器不支持文件夹备份'
+      : connected ? `已连接：${this.directoryHandle.name}` : '尚未连接文件夹';
+
+    const last = parseInt(localStorage.getItem(LAST_BACKUP_KEY), 10);
+    if (detail) detail.textContent = connected
+      ? (Number.isFinite(last) ? `最近备份：${new Date(last).toLocaleString()}` : `将创建 ${BACKUP_FILE_NAME}`)
+      : (supported ? '数据目前仅保存在此浏览器中' : '仍可使用下方的手动导出与导入');
+
+    if (selectButton) {
+      selectButton.disabled = !supported;
+      selectButton.textContent = connected ? '更换文件夹' : '选择文件夹';
+    }
+    if (backupButton) backupButton.disabled = !connected;
+    if (restoreButton) restoreButton.disabled = !connected;
+    if (disconnectButton) disconnectButton.disabled = !connected;
+    if (autoToggle) {
+      autoToggle.disabled = !connected;
+      autoToggle.checked = connected && this.isAutoEnabled();
+    }
+  }
+}
+
+const backupService = new LocalBackupService();
+window.backupService = backupService;
 
 
 /* ===== js/settings.js ===== */
@@ -7614,6 +8030,8 @@ class ImportMode {
       clearAllBtn.addEventListener('click', () => this.clearAllData());
     }
 
+    backupService.bindUI();
+
     this.initExampleSource();
     this.initOCRMode();
     this.loadBookSelects();
@@ -8000,6 +8418,7 @@ class ImportMode {
 
   switchTab(tabName) {
     this.currentTab = tabName;
+    const isStorage = tabName === 'storage';
 
     document.querySelectorAll('.import-tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.tab === tabName);
@@ -8008,6 +8427,15 @@ class ImportMode {
     document.querySelectorAll('.import-panel').forEach(panel => {
       panel.classList.toggle('active', panel.dataset.panel === tabName);
     });
+
+    const sourceBar = document.querySelector('.example-source-bar');
+    if (sourceBar) sourceBar.classList.toggle('hidden', isStorage);
+    const llmBar = document.getElementById('llm-bar');
+    if (llmBar) llmBar.classList.toggle('hidden', isStorage || !this.usesModel(this.exampleSource));
+    const preview = document.getElementById('import-preview');
+    if (preview) preview.classList.toggle('hidden', isStorage || this.parsedWords.length === 0);
+
+    if (isStorage) backupService.updateUI();
 
     this.updateImportParseButton();
   }
