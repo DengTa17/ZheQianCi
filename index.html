@@ -1081,6 +1081,38 @@ select.input-glass {
   margin-bottom: 1.75rem;
 }
 
+.setting-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.setting-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.setting-toggle-copy strong {
+  font-size: 0.95rem;
+}
+
+.setting-toggle-copy small {
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}
+
+.setting-toggle-row input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+}
+
 .theme-options {
   display: flex;
   flex-direction: column;
@@ -2172,6 +2204,54 @@ select.input-glass {
 .word-card.active .card-content {
   transform: scale(1.01);
   box-shadow: var(--shadow-lg);
+}
+
+/* ===== Positive reaction timer ===== */
+.study-timer {
+  margin: -0.35rem 3.75rem 1.35rem 0;
+}
+
+.study-timer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+}
+
+.study-timer-value {
+  min-width: 3.6rem;
+  text-align: right;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.study-timer-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+}
+
+.study-timer-fill {
+  width: 0;
+  height: 100%;
+  background: hsl(120 58% 70%);
+  transition: width 0.12s linear, background-color 0.12s linear;
+}
+
+.sentence-blank {
+  display: inline-block;
+  min-width: 5.5em;
+  padding: 0 0.35em;
+  border-bottom: 2px solid currentColor;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
 }
 
 /* ===== Word Display ===== */
@@ -3742,6 +3822,17 @@ select.input-glass {
           <p class="difficulty-desc" id="difficulty-desc"></p>
         </div>
 
+        <div class="settings-section">
+          <h4>学习计时</h4>
+          <label class="setting-toggle-row" for="show-study-timer">
+            <span class="setting-toggle-copy">
+              <strong>显示学习计时器</strong>
+              <small>从 0 秒开始正计时；难度越高，进度条越快变红。</small>
+            </span>
+            <input type="checkbox" id="show-study-timer">
+          </label>
+        </div>
+
         <div class="modal-actions">
           <button class="btn-glass" id="settings-close">完成</button>
         </div>
@@ -3830,7 +3921,7 @@ select.input-glass {
 
         <!-- Compact model bar (shown for AI modes): pick a model + open config -->
         <div class="llm-bar hidden" id="llm-bar">
-          <label for="llm-active-select">AI 模型：</label>
+          <label for="llm-active-select">AI 解析模型：</label>
           <select class="input-glass" id="llm-active-select"></select>
           <button class="btn-glass secondary small" id="llm-config-btn" title="配置自定义模型 / 测试连接">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -3862,7 +3953,7 @@ select.input-glass {
           <div class="ocr-import">
             <!-- OCR Model Selector -->
             <div class="ocr-mode-bar">
-              <label for="ocr-mode">AI模型：</label>
+              <label for="ocr-mode">OCR 识图模型：</label>
               <select class="input-glass" id="ocr-mode">
                 <option value="glm">智谱 GLM-4 OCR（高准确）</option>
                 <option value="tesseract">本地免费识别（Tesseract）</option>
@@ -3970,6 +4061,30 @@ function highlightWord(sentence, word) {
   const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${escapedWord})`, 'gi');
   return sentence.replace(regex, '<span class="highlight">$1</span>');
+}
+
+/**
+ * Format a study sentence without leaking the answer in Chinese-to-English mode.
+ */
+function formatStudySentence(sentence, word, concealWord = false) {
+  if (!sentence || !word) return sentence ? escapeHtml(sentence) : '<em>暂无例句</em>';
+
+  const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(^|[^A-Za-z])(${escapedWord})(?=$|[^A-Za-z])`, 'gi');
+  let cursor = 0;
+  let html = '';
+  let match;
+
+  while ((match = regex.exec(sentence)) !== null) {
+    const wordStart = match.index + match[1].length;
+    html += escapeHtml(sentence.slice(cursor, wordStart));
+    html += concealWord
+      ? '<span class="sentence-blank" aria-label="待填写单词">_____</span>'
+      : `<span class="highlight">${escapeHtml(match[2])}</span>`;
+    cursor = wordStart + match[2].length;
+  }
+
+  return html + escapeHtml(sentence.slice(cursor));
 }
 
 /**
@@ -6067,6 +6182,7 @@ const THEME_KEY = 'vocab_theme';
 const DIFFICULTY_KEY = 'vocab_difficulty';
 const WALLPAPER_KEY = 'vocab_wallpaper';
 const GLASS_ALPHA_KEY = 'vocab_glass_alpha';
+const SHOW_STUDY_TIMER_KEY = 'vocab_show_study_timer';
 
 const THEMES = [
   { id: 'default', name: '护眼模式' },
@@ -6078,6 +6194,8 @@ const THEMES = [
 // Difficulty levels -> target-score multiplier
 const DIFFICULTY_FACTORS = [0.6, 0.8, 1.0, 1.3, 1.6];
 const DIFFICULTY_LABELS = ['轻松', '简单', '普通', '较难', '硬核'];
+// Milliseconds until the reaction bar reaches red for each difficulty level.
+const REACTION_RED_MS = [6000, 5000, 4000, 3000, 2200];
 const DEFAULT_LEVEL = 2;
 
 class SettingsService {
@@ -6154,6 +6272,18 @@ class SettingsService {
     return DIFFICULTY_FACTORS.length - 1;
   }
 
+  getReactionRedMs() {
+    return REACTION_RED_MS[this.getDifficultyLevel()];
+  }
+
+  getShowStudyTimer() {
+    return localStorage.getItem(SHOW_STUDY_TIMER_KEY) !== 'false';
+  }
+
+  setShowStudyTimer(show) {
+    localStorage.setItem(SHOW_STUDY_TIMER_KEY, show ? 'true' : 'false');
+  }
+
   // ===== Scoring helpers (used by study + review) =====
 
   // Backend-only target score, derived from word length and scaled by difficulty.
@@ -6210,6 +6340,8 @@ class StudyMode {
     this.isComplete = false;
     this.isSpeaking = false;
     this.wheelLock = false;
+    this.timerFrame = 0;
+    this.timerStoppedAt = 0;
   }
 
   init() {
@@ -6263,7 +6395,10 @@ class StudyMode {
   }
 
   onShow() { this.loadWords(); }
-  onHide() { speechService.stop(); }
+  onHide() {
+    speechService.stop();
+    this.stopTimer();
+  }
 
   loadWords() {
     if (this.total === 0) { this.renderEmpty(); return; }
@@ -6278,6 +6413,8 @@ class StudyMode {
 
   renderEmpty() {
     if (!this.container) return;
+    this.stopTimer();
+    this.current = null;
     this.container.innerHTML = `
       <div class="study-empty">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4;margin-bottom:1rem;">
@@ -6303,6 +6440,7 @@ class StudyMode {
     this.container.innerHTML = this.cardHtml(word, mode);
     this.updateIndicator(mode);
     if (this.indicator) this.indicator.classList.remove('hidden');
+    this.startTimer();
 
     if (mode === 'en-to-cn') {
       setTimeout(() => speechService.autoSpeakWord(word.word), 400);
@@ -6313,7 +6451,7 @@ class StudyMode {
     const isEnToCn = mode === 'en-to-cn';
     const displayText = isEnToCn ? word.word : word.meaning;
     const hiddenText = isEnToCn ? word.meaning : word.word;
-    const sentenceHtml = highlightWord(word.sentence, word.word);
+    const sentenceHtml = formatStudySentence(word.sentence, word.word, !isEnToCn);
     const phoneticHtml = this.renderPhonetic(word, isEnToCn);
     const hasSentence = !!(word.sentence && word.sentence.trim());
     const hasMnemonic = !!(word.mnemonic && word.mnemonic.trim());
@@ -6321,6 +6459,15 @@ class StudyMode {
     return `
       <div class="word-card active card-enter" data-mode="${mode}" data-id="${word.id}">
         <div class="card-content">
+          <div class="study-timer ${settings.getShowStudyTimer() ? '' : 'hidden'}" aria-live="off">
+            <div class="study-timer-head">
+              <span>反应时间 · ${escapeHtml(settings.getDifficultyLabel())}</span>
+              <span class="study-timer-value">0.0 秒</span>
+            </div>
+            <div class="study-timer-track" aria-hidden="true">
+              <div class="study-timer-fill"></div>
+            </div>
+          </div>
           <button class="speak-btn" onclick="studyMode.speakCurrent()" title="朗读" aria-label="朗读当前单词">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -6388,6 +6535,7 @@ class StudyMode {
 
   renderComplete() {
     this.isComplete = true;
+    this.stopTimer();
     if (this.indicator) this.indicator.classList.add('hidden');
     const msg = COMPLETE_MESSAGES[Math.floor(Math.random() * COMPLETE_MESSAGES.length)];
     if (!this.container) return;
@@ -6439,6 +6587,64 @@ class StudyMode {
     `;
   }
 
+  // ===== Positive reaction timer =====
+
+  startTimer() {
+    this.stopTimer();
+    this.timerStoppedAt = 0;
+    if (!this.current || !settings.getShowStudyTimer()) return;
+
+    const tick = () => {
+      if (!this.current || this.isComplete || !this.viewEl?.classList.contains('active')) return;
+      this.renderTimer(Date.now() - this.current.startTime);
+      this.timerFrame = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  stopTimer() {
+    if (this.timerFrame) cancelAnimationFrame(this.timerFrame);
+    this.timerFrame = 0;
+    if (this.current && !this.timerStoppedAt) {
+      this.timerStoppedAt = Date.now() - (this.current.startTime || Date.now());
+    }
+  }
+
+  renderTimer(elapsedMs) {
+    const timer = this.container?.querySelector('.study-timer');
+    if (!timer) return;
+    timer.classList.toggle('hidden', !settings.getShowStudyTimer());
+
+    const value = timer.querySelector('.study-timer-value');
+    const fill = timer.querySelector('.study-timer-fill');
+    const label = timer.querySelector('.study-timer-head > span');
+    const redMs = settings.getReactionRedMs();
+    const progress = Math.max(0, Math.min(1, elapsedMs / redMs));
+    const hue = Math.round(120 * (1 - progress));
+
+    if (value) value.textContent = `${(elapsedMs / 1000).toFixed(1)} 秒`;
+    if (label) label.textContent = `反应时间 · ${settings.getDifficultyLabel()}`;
+    if (fill) {
+      fill.style.width = `${Math.max(2, progress * 100).toFixed(1)}%`;
+      fill.style.backgroundColor = `hsl(${hue} 68% ${68 - progress * 12}%)`;
+    }
+  }
+
+  syncTimerVisibility() {
+    const show = settings.getShowStudyTimer();
+    const timer = this.container?.querySelector('.study-timer');
+    if (timer) timer.classList.toggle('hidden', !show);
+    if (!this.current || this.isComplete) return;
+    if (show) this.startTimer();
+    else this.stopTimer();
+  }
+
+  refreshTimerForDifficulty() {
+    if (!this.current) return;
+    const elapsed = this.timerStoppedAt || (Date.now() - this.current.startTime);
+    this.renderTimer(elapsed);
+  }
+
   // ===== Interactions =====
 
   speakCurrent() {
@@ -6450,7 +6656,10 @@ class StudyMode {
     if (!el) return;
     el.classList.toggle('hidden');
     // Viewing the answer closes the "认识" scoring channel for this appearance
-    if (!el.classList.contains('hidden')) this.lockKnown();
+    if (!el.classList.contains('hidden')) {
+      this.stopTimer();
+      this.lockKnown();
+    }
   }
 
   // Show / hide the Chinese translation of the example sentence.
@@ -6517,11 +6726,13 @@ class StudyMode {
     }
     if (c.scored) return;
     c.scored = true;
+    this.stopTimer();
 
     const T = Date.now() - (c.startTime || Date.now());
+    const redMs = settings.getReactionRedMs();
     let delta;
-    if (T <= 1500) delta = 2;        // 秒答
-    else if (T <= 3000) delta = 1;   // 较快
+    if (T <= redMs * 0.35) delta = 2;       // 秒答
+    else if (T <= redMs * 0.7) delta = 1;   // 较快
     else delta = -1;                 // 超时，往回退
 
     const word = c.word;
@@ -6551,6 +6762,7 @@ class StudyMode {
   // Wheel / Arrow / button = skip: not learned this pass -> requeue
   skip() {
     if (!this.current || this.isComplete) return;
+    this.stopTimer();
     this.requeueCurrent();
     this.advance();
   }
@@ -8742,6 +8954,9 @@ class App {
   }
 
   showStartScreen() {
+    const current = this.views[this.currentView];
+    if (current?.mode?.onHide) current.mode.onHide();
+
     // Hide all views
     document.querySelectorAll('.view-section').forEach(el => {
       el.classList.remove('active');
@@ -9127,8 +9342,17 @@ class App {
       slider.addEventListener('input', () => {
         settings.setDifficultyLevel(slider.value);
         this.syncSettingsUI();
+        studyMode.refreshTimerForDifficulty();
         // Refresh rings if review is open
         if (this.currentView === 'review') reviewMode.refreshProgress();
+      });
+    }
+
+    const timerToggle = document.getElementById('show-study-timer');
+    if (timerToggle) {
+      timerToggle.addEventListener('change', () => {
+        settings.setShowStudyTimer(timerToggle.checked);
+        studyMode.syncTimerVisibility();
       });
     }
 
@@ -9188,8 +9412,12 @@ class App {
     if (slider) slider.value = String(settings.getDifficultyLevel());
     const desc = document.getElementById('difficulty-desc');
     if (desc) {
-      desc.textContent = `当前：${settings.getDifficultyLabel()} · 目标分数随难度自动调整`;
+      desc.textContent = `当前：${settings.getDifficultyLabel()} · ${
+        (settings.getReactionRedMs() / 1000).toFixed(1)
+      } 秒变红，目标分数同步调整`;
     }
+    const timerToggle = document.getElementById('show-study-timer');
+    if (timerToggle) timerToggle.checked = settings.getShowStudyTimer();
 
     // Wallpaper section: only shown for the wallpaper theme
     const wpSection = document.getElementById('wallpaper-settings');
