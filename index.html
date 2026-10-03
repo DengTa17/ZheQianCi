@@ -1214,7 +1214,7 @@ select.input-glass {
   padding: 0 1.5rem;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  z-index: 50;
+  z-index: 110;
 }
 
 .nav-brand {
@@ -1808,8 +1808,73 @@ select.input-glass {
   z-index: 3;
   cursor: grab;
   touch-action: none; /* let horizontal drags turn the page, not scroll */
-  perspective: 900px;
+  perspective: 1600px;
+  perspective-origin: 50% 42%;
   transform-style: preserve-3d;
+  overflow: visible;
+}
+.fold-cover::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 12% 8%;
+  border-radius: 40%;
+  background: rgba(0, 0, 0, 0.34);
+  filter: blur(12px);
+  opacity: calc(var(--fold) * 0.75);
+  pointer-events: none;
+  transform: translateY(10px) scaleX(calc(1 - var(--fold) * 0.35));
+}
+
+.fold-leaf {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+}
+.fold-cn .fold-leaf { transform-origin: right center; }
+.fold-en .fold-front,
+.fold-en .fold-flap { width: 68%; right: auto; }
+.fold-cn .fold-front,
+.fold-cn .fold-flap { width: 68%; left: auto; right: 0; }
+.fold-curl {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 34%;
+  z-index: 4;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.fold-en .fold-curl { right: 0; transform-origin: left center; }
+.fold-cn .fold-curl { left: 0; right: auto; transform-origin: right center; border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.fold-curl::before,
+.fold-curl::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  backface-visibility: hidden;
+}
+.fold-curl::before {
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.18), transparent 18%, rgba(255,255,255,0.16) 78%, rgba(255,255,255,0.34)),
+    color-mix(in srgb, var(--background) 96%, var(--accent));
+  box-shadow: inset 8px 0 12px rgba(0,0,0,0.16);
+}
+.fold-cn .fold-curl::before {
+  background:
+    linear-gradient(270deg, rgba(0,0,0,0.18), transparent 18%, rgba(255,255,255,0.16) 78%, rgba(255,255,255,0.34)),
+    color-mix(in srgb, var(--background) 96%, var(--accent));
+  box-shadow: inset -8px 0 12px rgba(0,0,0,0.16);
+}
+.fold-curl::after {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.45), rgba(255,255,255,0.08) 30%, rgba(0,0,0,0.18)),
+    color-mix(in srgb, var(--surface-overlay) 92%, white);
 }
 
 .fold-cover.dragging { cursor: grabbing; }
@@ -1879,16 +1944,14 @@ select.input-glass {
 
 .fold-flap {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 2;
-  border-radius: 6px;
-  opacity: 0;
+  border-radius: var(--radius-md);
+  opacity: 1;
   pointer-events: none;
-  transform-origin: right center;
-  will-change: transform, left, width;
-  width: 0;
-  left: 0;
+  transform: rotateY(180deg);
+  transform-origin: center center;
+  will-change: transform;
   overflow: hidden;
   /* Back of the turning sheet. The broad highlight and dark crease move with
      the whole turned area, so this reads as a page rather than a lifted tab. */
@@ -1905,8 +1968,8 @@ select.input-glass {
     inset 0 0 24px rgba(0,0,0,0.08),
     inset -12px 0 18px rgba(0,0,0,0.12),
     inset 1px 0 0 rgba(255,255,255,0.35);
-  filter: drop-shadow(0 5px 9px rgba(0,0,0,0.30));
-  backface-visibility: visible;
+  filter: none;
+  backface-visibility: hidden;
 }
 .fold-flap.active { opacity: 1; }
 
@@ -1951,8 +2014,66 @@ select.input-glass {
 }
 
 /* Resting open state: cover fully peeled away → reveal the word */
-.word-row.revealed-en .fold-en .fold-front,
-.word-row.revealed-cn .fold-cn .fold-front { opacity: 0; pointer-events: none; }
+.word-row.revealed-en .fold-en .fold-sheet,
+.word-row.revealed-cn .fold-cn .fold-sheet { visibility: hidden; }
+.fold-sheet {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  z-index: 2;
+}
+.fold-strip {
+  position: relative;
+  flex: 1 0 calc(100% / 18);
+  margin-right: -1px;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+}
+.fold-cn .fold-strip { transform-origin: right center; }
+.fold-face, .fold-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+.fold-face {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.16), rgba(0,0,0,0.12)),
+    color-mix(in srgb, var(--background) 97%, var(--accent));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+.fold-back {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.1), rgba(0,0,0,0.22)),
+    color-mix(in srgb, var(--background) 94%, var(--accent));
+}
+.fold-en .fold-strip:first-child .fold-face,
+.fold-en .fold-strip:first-child .fold-back { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.fold-en .fold-strip:last-child .fold-face,
+.fold-en .fold-strip:last-child .fold-back { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.fold-cn .fold-strip:first-child .fold-face,
+.fold-cn .fold-strip:first-child .fold-back { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.fold-cn .fold-strip:last-child .fold-face,
+.fold-cn .fold-strip:last-child .fold-back { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.fold-cover > .fold-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  opacity: max(0, calc(1 - var(--fold) * 3.2));
+}
+.word-row:has(.fold-cover.dragging),
+.word-row:has(.fold-cover.dragging):hover,
+.word-row:has(.fold-cover.dragging):active {
+  transform: none;
+  z-index: 6;
+}
 
 /* Smooth fade only while snapping after release (never during the live drag) */
 .fold-cover.snapping .fold-front { transition: opacity 0.34s ease; }
@@ -2940,6 +3061,69 @@ select.input-glass {
   overflow-y: auto;
 }
 
+
+/* ===== Local test OCR language controls ===== */
+.ocr-language-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.ocr-language-bar label,
+.ocr-language-hint {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+.ocr-language-bar select { flex: 0 1 245px; min-width: 195px; }
+.ocr-language-hint { flex: 1; min-width: 185px; line-height: 1.5; }
+.ocr-unit-toggle { white-space: nowrap; flex-shrink: 0; }
+.ocr-unit-toggle[hidden] { display: none; }
+.ocr-raw-panel {
+  margin: 1rem 0 0;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.ocr-raw-heading,
+.preview-toolbar,
+.preview-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.ocr-raw-heading,
+.preview-toolbar { justify-content: space-between; }
+.ocr-raw-heading label,
+.preview-toolbar > span {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+.ocr-raw-panel textarea { width: 100%; margin-top: 0.65rem; min-height: 120px; resize: vertical; }
+.preview-toolbar { margin: 0 0 0.9rem; flex-wrap: wrap; }
+.preview-type {
+  padding: 0.12rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-muted);
+  color: var(--accent);
+  font-size: 0.72rem;
+}
+.preview-select { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--text-tertiary); font-size: 0.72rem; }
+.preview-select input { width: 15px; height: 15px; accent-color: var(--accent); }
+.preview-top-row { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; padding-right: 2.4rem; }
+.preview-item .preview-select input { width: 15px; height: 15px; flex: 0 0 auto; }
+@media (max-width: 640px) {
+  .ocr-language-bar { align-items: stretch; flex-direction: column; }
+  .ocr-language-bar select, .ocr-language-hint, .ocr-unit-toggle { max-width: none; width: 100%; }
+  .ocr-raw-heading, .preview-toolbar { align-items: stretch; flex-direction: column; }
+  .preview-toolbar-actions { width: 100%; }
+  .preview-toolbar-actions .btn-glass { flex: 1; }
+}
+
 /* ===== Manual Import ===== */
 .manual-import .format-hint {
   color: var(--text-secondary);
@@ -3655,6 +3839,463 @@ select.input-glass {
   }
 }
 
+
+/* ===== Claude MV visual layer =====
+   Cinematic frame: letterbox, grain, scan drift, glow type.
+   Markup, behavior and the four themes stay intact. */
+
+:root {
+  --background: #070605;
+  --surface: rgba(18, 14, 12, 0.78);
+  --surface-raised: rgba(32, 24, 20, 0.88);
+  --surface-overlay: rgba(12, 9, 8, 0.94);
+  --border: rgba(255, 214, 170, 0.14);
+  --border-strong: rgba(255, 214, 170, 0.28);
+  --border-hover: rgba(255, 186, 120, 0.55);
+  --text-primary: #F6E7D4;
+  --text-secondary: #CDB59A;
+  --text-tertiary: #8E7864;
+  --accent: #FFB25A;
+  --accent-hover: #FFD29A;
+  --accent-muted: rgba(255, 178, 90, 0.14);
+  --accent-secondary: #E25B45;
+  --danger: #FF6B57;
+  --danger-muted: rgba(255, 107, 87, 0.14);
+  --success: #9DDE9A;
+  --warning: #FFD166;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --shadow-sm: 0 0 0 1px rgba(255, 214, 170, 0.05);
+  --shadow-md: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 30px 80px rgba(0, 0, 0, 0.62);
+  --nav-height: 64px;
+  --ink-on-accent: #1A1008;
+}
+
+[data-theme="scifi"] {
+  --background: #03060C;
+  --surface: rgba(8, 16, 28, 0.78);
+  --surface-raised: rgba(12, 28, 46, 0.9);
+  --surface-overlay: rgba(4, 10, 18, 0.94);
+  --border: rgba(120, 230, 255, 0.16);
+  --border-strong: rgba(120, 230, 255, 0.32);
+  --border-hover: rgba(180, 255, 255, 0.7);
+  --text-primary: #E7FBFF;
+  --text-secondary: #9ED7E6;
+  --text-tertiary: #5E8EA0;
+  --accent: #39F3FF;
+  --accent-hover: #B8FBFF;
+  --accent-muted: rgba(57, 243, 255, 0.12);
+  --accent-secondary: #FF3D8A;
+  --danger: #FF5D73;
+  --danger-muted: rgba(255, 93, 115, 0.14);
+  --success: #5DFFC2;
+  --warning: #FFE14A;
+  --ink-on-accent: #031318;
+}
+
+[data-theme="fresh"] {
+  --background: #120816;
+  --surface: rgba(34, 16, 38, 0.78);
+  --surface-raised: rgba(58, 24, 62, 0.88);
+  --surface-overlay: rgba(18, 8, 22, 0.94);
+  --border: rgba(255, 190, 230, 0.16);
+  --border-strong: rgba(255, 190, 230, 0.3);
+  --border-hover: rgba(255, 214, 240, 0.62);
+  --text-primary: #FFEAF6;
+  --text-secondary: #E2B7D4;
+  --text-tertiary: #A67A98;
+  --accent: #FF77C8;
+  --accent-hover: #FFC2E6;
+  --accent-muted: rgba(255, 119, 200, 0.14);
+  --accent-secondary: #7AD7FF;
+  --danger: #FF6B8A;
+  --danger-muted: rgba(255, 107, 138, 0.14);
+  --success: #8DFFC8;
+  --warning: #FFD27A;
+  --ink-on-accent: #2A0C1C;
+}
+
+[data-theme="wallpaper"] {
+  --surface: rgba(8, 8, 8, calc(var(--glass-alpha) * 0.72));
+  --surface-raised: rgba(16, 16, 16, calc(var(--glass-alpha) + 0.08));
+  --surface-overlay: rgba(0, 0, 0, 0.72);
+  --text-primary: #F7F3EA;
+  --text-secondary: #DDD4C6;
+  --text-tertiary: #B3A89A;
+  --accent: #F2E7C9;
+  --accent-hover: #FFFFFF;
+  --accent-muted: rgba(242, 231, 201, 0.16);
+  --ink-on-accent: #16120C;
+}
+
+body, #start-screen, .word-card {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(1200px 700px at 50% 115%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 58%),
+    radial-gradient(900px 520px at 0% 0%, color-mix(in srgb, var(--accent-secondary) 18%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(0,0,0,0.55), transparent 12%, transparent 88%, rgba(0,0,0,0.62));
+  background-size: auto;
+}
+[data-theme="scifi"] body,
+[data-theme="scifi"] #start-screen,
+[data-theme="scifi"] .word-card,
+[data-theme="fresh"] body,
+[data-theme="fresh"] #start-screen,
+[data-theme="fresh"] .word-card {
+  background-size: auto;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 80;
+}
+body::before {
+  background:
+    repeating-linear-gradient(to bottom, rgba(255,255,255,0.035) 0 1px, transparent 1px 4px);
+  mix-blend-mode: overlay;
+  opacity: 0.28;
+  animation: mvScan 9s linear infinite;
+}
+body::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  opacity: 0.16;
+  mix-blend-mode: soft-light;
+}
+@keyframes mvScan { to { transform: translateY(4px); } }
+
+body { letter-spacing: 0.01em; }
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: 0.04em; text-transform: none; }
+
+.top-nav {
+  height: var(--nav-height);
+  background: linear-gradient(180deg, rgba(0,0,0,0.78), rgba(0,0,0,0.28));
+  border-bottom: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.nav-brand-zh {
+  font-size: 1.15rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.nav-brand-sub { letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent); }
+.nav-link, .nav-icon-btn { border-radius: 999px; }
+.nav-link.active {
+  background: transparent;
+  color: var(--accent);
+  box-shadow: inset 0 -1px 0 var(--accent);
+}
+
+.btn-glass, .dash-review-btn, .dash-cta, .known-btn {
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent), 0 0 24px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.btn-glass { background: transparent; color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); }
+.btn-glass:hover, .dash-review-btn:hover { background: var(--accent); color: var(--ink-on-accent); transform: none; }
+.btn-glass.secondary { background: transparent; color: var(--text-primary); }
+.input-glass, select.input-glass, textarea.input-glass { border-radius: 18px; background: rgba(0,0,0,0.28); }
+
+.dash-content { max-width: 920px; }
+.dash-hero { text-align: left; }
+.dash-title {
+  font-size: clamp(3.2rem, 9vw, 6.4rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 0.9;
+  text-shadow: 0 0 30px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.dash-brand-en { letter-spacing: 0.55em; font-size: 0.72rem; }
+.dash-greeting { font-family: var(--font-body); letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.78rem; color: var(--accent); }
+.dash-cta {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  padding: 1.35rem 1.4rem;
+}
+.dash-cta-icon { border-radius: 16px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.dash-stat-card, .dash-card, .dash-action-btn, .start-btn, .import-panel, .preview-item, .word-row, .book-card, .modal-content, .confirm-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-md);
+}
+.dash-stat-value, .word-display { font-family: var(--font-heading); letter-spacing: -0.04em; }
+.dash-heatmap-cell, .dash-heatmap-cell.l1, .dash-heatmap-cell.l2, .dash-heatmap-cell.l3, .dash-heatmap-cell.l4,
+[data-theme="default"] .dash-heatmap-cell.l1,
+[data-theme="default"] .dash-heatmap-cell.l2,
+[data-theme="default"] .dash-heatmap-cell.l3,
+[data-theme="default"] .dash-heatmap-cell.l4,
+[data-theme="fresh"] .dash-heatmap-cell.l1,
+[data-theme="fresh"] .dash-heatmap-cell.l2,
+[data-theme="fresh"] .dash-heatmap-cell.l3,
+[data-theme="fresh"] .dash-heatmap-cell.l4 { border-radius: 1px; }
+.dash-heatmap-cell.l1 { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+.dash-heatmap-cell.l2 { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.dash-heatmap-cell.l3 { background: color-mix(in srgb, var(--accent) 70%, transparent); }
+.dash-heatmap-cell.l4 { background: var(--accent); }
+
+.card-content {
+  background: rgba(0,0,0,0.46);
+  border: 1px solid var(--border-strong);
+  border-radius: 32px;
+  box-shadow: var(--shadow-lg), inset 0 0 80px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.word-display { text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 40%, transparent); }
+.sentence-box, .mnemonic-box { background: rgba(0,0,0,0.28); border-radius: 20px; }
+.import-tab, .import-tab.active { border-radius: 999px; }
+.import-tab.active { background: var(--accent); color: var(--ink-on-accent); }
+.upload-area, .ocr-import .upload-area { border-radius: 28px; background: rgba(0,0,0,0.25); }
+
+[data-theme="wallpaper"] .top-nav,
+[data-theme="wallpaper"] .card-content,
+[data-theme="wallpaper"] .dash-card,
+[data-theme="wallpaper"] .dash-stat-card {
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+}
+
+#mv-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+#app { position: relative; z-index: 90; }
+#start-screen {
+  background: transparent !important;
+  background-image: none !important;
+}
+.btn-glass, .input-glass, .modal-content, .toast, .confirm-box,
+.preview-item, .word-row, .book-card, .dash-card, .dash-stat-card, .theme-option {
+  border-radius: 22px;
+}
+.study-controls button { border-radius: 50%; }
+.btn-glass, .nav-link, .nav-icon-btn, .import-tab, .toggle-btn,
+.dash-review-btn, .known-btn, .start-btn, .dash-action-btn {
+  border-radius: 999px;
+}
+.btn-glass, .dash-cta, .dash-action-btn, .dash-review-btn, .start-btn,
+.nav-link, .known-btn, .import-tab, .toggle-btn, .theme-option {
+  position: relative;
+  overflow: hidden;
+  --glow-x: 50%;
+}
+.btn-glass::after, .dash-cta::after, .dash-action-btn::after, .dash-review-btn::after,
+.start-btn::after, .nav-link::after, .known-btn::after, .import-tab::after,
+.toggle-btn::after, .theme-option::after {
+  content: "";
+  position: absolute;
+  left: var(--glow-x);
+  bottom: -2px;
+  width: 58%;
+  height: 14px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent) 82%, white), transparent 72%);
+  filter: blur(5px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.btn-glass:hover::after, .dash-cta:hover::after, .dash-action-btn:hover::after,
+.dash-review-btn:hover::after, .start-btn:hover::after, .nav-link:hover::after,
+.known-btn:hover::after, .import-tab:hover::after, .toggle-btn:hover::after,
+.theme-option:hover::after { opacity: 0.9; }
+.dash-heatmap-cell { border-radius: 7px; }
+
+  /* ===== Stability and responsive fixes ===== */
+  .top-nav { z-index: 110; }
+  .btn-glass, .dash-cta, .dash-action-btn, .dash-review-btn, .start-btn,
+  .nav-link, .known-btn, .import-tab, .toggle-btn, .theme-option {
+    overflow: visible;
+  }
+  .study-controls button { border-radius: 50%; }
+
+  @media (max-width: 640px) {
+    .top-nav { padding: 0 0.75rem; gap: 0.35rem; }
+    .nav-brand { min-width: 0; flex: 1 1 auto; }
+    .nav-brand-zh { font-size: 0.95rem; letter-spacing: 0.12em; white-space: nowrap; }
+    .nav-links { flex: 0 0 auto; gap: 0.15rem; }
+    .nav-link {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+      flex: 0 0 34px;
+    }
+    .nav-link::before {
+      display: block;
+      font-family: var(--font-body);
+      font-size: 0.76rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+    .nav-link[data-view="review"]::before { content: "复"; }
+    .nav-link[data-view="study"]::before { content: "学"; }
+    .nav-link[data-view="import"]::before { content: "导"; }
+    .nav-icon-btn { width: 34px; height: 34px; flex: 0 0 34px; }
+  }
+
+  @media (max-width: 380px) {
+    .top-nav { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .nav-brand-zh { font-size: 0.88rem; }
+    .nav-icon-btn, .nav-link { width: 32px; height: 32px; flex-basis: 32px; }
+  }
+
+  @supports (height: 100dvh) {
+    .modal-content { --modal-viewport-height: 100dvh; }
+  }
+  @media (max-width: 640px) {
+    .modal-content { max-height: calc(var(--modal-viewport-height, 100vh) - 24px); }
+  }
+
+  @supports not (color: color-mix(in srgb, black, white)) {
+    body, #start-screen, .word-card {
+      background-image: radial-gradient(900px 520px at 50% 100%, rgba(255, 178, 90, 0.18), transparent 62%);
+    }
+    .nav-brand-zh { text-shadow: 0 0 18px rgba(255, 178, 90, 0.42); }
+    .btn-glass, .dash-cta, .dash-action-btn, .dash-review-btn, .start-btn, .known-btn {
+      box-shadow: 0 0 0 1px rgba(255, 178, 90, 0.42), 0 0 24px rgba(255, 178, 90, 0.18);
+    }
+    .btn-glass { border-color: rgba(255, 178, 90, 0.55); }
+    .dash-cta-icon { background: rgba(255, 178, 90, 0.16); }
+    .dash-heatmap-cell.l1 { background: rgba(255, 178, 90, 0.25); }
+    .dash-heatmap-cell.l2 { background: rgba(255, 178, 90, 0.45); }
+    .dash-heatmap-cell.l3 { background: rgba(255, 178, 90, 0.7); }
+    .card-content { box-shadow: var(--shadow-lg), inset 0 0 80px rgba(255, 178, 90, 0.08); }
+    .word-display { text-shadow: 0 0 24px rgba(255, 178, 90, 0.4); }
+    .btn-glass::after, .dash-cta::after, .dash-action-btn::after, .dash-review-btn::after,
+    .start-btn::after, .nav-link::after, .known-btn::after, .import-tab::after,
+    .toggle-btn::after, .theme-option::after { background: radial-gradient(ellipse at center, rgba(255, 206, 145, 0.82), transparent 72%); }
+
+    [data-theme="scifi"] body, [data-theme="scifi"] #start-screen, [data-theme="scifi"] .word-card {
+      background-image: radial-gradient(900px 520px at 50% 100%, rgba(57, 243, 255, 0.2), transparent 62%), radial-gradient(700px 420px at 0% 0%, rgba(255, 61, 138, 0.14), transparent 60%);
+    }
+    [data-theme="scifi"] .nav-brand-zh { text-shadow: 0 0 18px rgba(57, 243, 255, 0.55); }
+    [data-theme="scifi"] .btn-glass, [data-theme="scifi"] .dash-cta, [data-theme="scifi"] .dash-action-btn, [data-theme="scifi"] .dash-review-btn, [data-theme="scifi"] .start-btn, [data-theme="scifi"] .known-btn { box-shadow: 0 0 0 1px rgba(57, 243, 255, 0.42), 0 0 24px rgba(57, 243, 255, 0.18); }
+    [data-theme="scifi"] .btn-glass { border-color: rgba(57, 243, 255, 0.55); }
+    [data-theme="scifi"] .dash-cta-icon { background: rgba(57, 243, 255, 0.16); }
+    [data-theme="scifi"] .card-content { box-shadow: var(--shadow-lg), inset 0 0 80px rgba(57, 243, 255, 0.08); }
+    [data-theme="scifi"] .word-display { text-shadow: 0 0 24px rgba(57, 243, 255, 0.4); }
+    [data-theme="scifi"] .btn-glass::after, [data-theme="scifi"] .dash-cta::after, [data-theme="scifi"] .dash-action-btn::after, [data-theme="scifi"] .dash-review-btn::after, [data-theme="scifi"] .start-btn::after, [data-theme="scifi"] .nav-link::after, [data-theme="scifi"] .known-btn::after, [data-theme="scifi"] .import-tab::after, [data-theme="scifi"] .toggle-btn::after, [data-theme="scifi"] .theme-option::after { background: radial-gradient(ellipse at center, rgba(184, 251, 255, 0.84), transparent 72%); }
+
+    [data-theme="fresh"] body, [data-theme="fresh"] #start-screen, [data-theme="fresh"] .word-card {
+      background-image: radial-gradient(900px 520px at 50% 100%, rgba(255, 119, 200, 0.2), transparent 62%), radial-gradient(700px 420px at 0% 0%, rgba(122, 215, 255, 0.14), transparent 60%);
+    }
+    [data-theme="fresh"] .nav-brand-zh { text-shadow: 0 0 18px rgba(255, 119, 200, 0.55); }
+    [data-theme="fresh"] .btn-glass, [data-theme="fresh"] .dash-cta, [data-theme="fresh"] .dash-action-btn, [data-theme="fresh"] .dash-review-btn, [data-theme="fresh"] .start-btn, [data-theme="fresh"] .known-btn { box-shadow: 0 0 0 1px rgba(255, 119, 200, 0.42), 0 0 24px rgba(255, 119, 200, 0.18); }
+    [data-theme="fresh"] .btn-glass { border-color: rgba(255, 119, 200, 0.55); }
+    [data-theme="fresh"] .dash-cta-icon { background: rgba(255, 119, 200, 0.16); }
+    [data-theme="fresh"] .card-content { box-shadow: var(--shadow-lg), inset 0 0 80px rgba(255, 119, 200, 0.08); }
+    [data-theme="fresh"] .word-display { text-shadow: 0 0 24px rgba(255, 119, 200, 0.4); }
+    [data-theme="fresh"] .btn-glass::after, [data-theme="fresh"] .dash-cta::after, [data-theme="fresh"] .dash-action-btn::after, [data-theme="fresh"] .dash-review-btn::after, [data-theme="fresh"] .start-btn::after, [data-theme="fresh"] .nav-link::after, [data-theme="fresh"] .known-btn::after, [data-theme="fresh"] .import-tab::after, [data-theme="fresh"] .toggle-btn::after, [data-theme="fresh"] .theme-option::after { background: radial-gradient(ellipse at center, rgba(255, 194, 230, 0.84), transparent 72%); }
+
+    [data-theme="wallpaper"] .nav-brand-zh { text-shadow: 0 0 18px rgba(242, 231, 201, 0.48); }
+    [data-theme="wallpaper"] .btn-glass, [data-theme="wallpaper"] .dash-cta, [data-theme="wallpaper"] .dash-action-btn, [data-theme="wallpaper"] .dash-review-btn, [data-theme="wallpaper"] .start-btn, [data-theme="wallpaper"] .known-btn { box-shadow: 0 0 0 1px rgba(242, 231, 201, 0.42), 0 0 24px rgba(242, 231, 201, 0.18); }
+    [data-theme="wallpaper"] .btn-glass { border-color: rgba(242, 231, 201, 0.55); }
+    [data-theme="wallpaper"] .dash-cta-icon { background: rgba(242, 231, 201, 0.16); }
+    [data-theme="wallpaper"] .card-content { box-shadow: var(--shadow-lg), inset 0 0 80px rgba(242, 231, 201, 0.08); }
+    [data-theme="wallpaper"] .word-display { text-shadow: 0 0 24px rgba(242, 231, 201, 0.4); }
+    [data-theme="wallpaper"] .btn-glass::after, [data-theme="wallpaper"] .dash-cta::after, [data-theme="wallpaper"] .dash-action-btn::after, [data-theme="wallpaper"] .dash-review-btn::after, [data-theme="wallpaper"] .start-btn::after, [data-theme="wallpaper"] .nav-link::after, [data-theme="wallpaper"] .known-btn::after, [data-theme="wallpaper"] .import-tab::after, [data-theme="wallpaper"] .toggle-btn::after, [data-theme="wallpaper"] .theme-option::after { background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.84), transparent 72%); }
+  }
+
+  /* Review masks have to hide the word. The cinematic surfaces are translucent,
+     so the fold cover gets its own frosted glass instead of inheriting them. */
+  .fold-front {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 42%, rgba(0, 0, 0, 0.18)),
+      color-mix(in srgb, var(--background) 97%, var(--accent));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -12px 20px rgba(0, 0, 0, 0.16),
+      0 10px 22px rgba(0, 0, 0, 0.24);
+  }
+  .fold-flap {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  [data-theme="wallpaper"] .fold-front {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.2)),
+      rgba(244, 244, 244, 0.97);
+  }
+  @supports not (color: color-mix(in srgb, black, white)) {
+    .fold-front { background: rgba(12, 9, 8, 0.94); }
+    [data-theme="scifi"] .fold-front { background: rgba(4, 12, 20, 0.94); }
+    [data-theme="fresh"] .fold-front { background: rgba(24, 10, 26, 0.94); }
+    [data-theme="wallpaper"] .fold-front { background: rgba(244, 244, 244, 0.92); }
+  }
+  @media (max-width: 640px) {
+    .word-list.mask-english .word-cell,
+    .word-list.mask-english .phonetic-cell,
+    .word-list.mask-chinese .meaning-cell {
+      position: relative;
+      color: transparent;
+      text-shadow: none;
+      filter: none;
+      opacity: 1;
+      user-select: none;
+    }
+    .word-list.mask-english .word-cell::after,
+    .word-list.mask-english .phonetic-cell::after,
+    .word-list.mask-chinese .meaning-cell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.12)),
+        color-mix(in srgb, var(--background) 96%, var(--accent));
+      backdrop-filter: blur(16px) saturate(1.3);
+      -webkit-backdrop-filter: blur(16px) saturate(1.3);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    }
+    .word-list.mask-english .word-row:active .word-cell,
+    .word-list.mask-english .word-row:active .phonetic-cell,
+    .word-row.revealed-en .word-cell,
+    .word-row.revealed-en .phonetic-cell {
+      color: var(--text-primary);
+    }
+    .word-list.mask-chinese .word-row:active .meaning-cell,
+    .word-row.revealed-cn .meaning-cell {
+      color: var(--text-secondary);
+    }
+    .word-list.mask-english .word-row:active .word-cell::after,
+    .word-list.mask-english .word-row:active .phonetic-cell::after,
+    .word-list.mask-chinese .word-row:active .meaning-cell::after,
+    .word-row.revealed-en .word-cell::after,
+    .word-row.revealed-en .phonetic-cell::after,
+    .word-row.revealed-cn .meaning-cell::after {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body::before { animation: none; }
+    .btn-glass::after, .dash-cta::after, .dash-action-btn::after, .dash-review-btn::after,
+    .start-btn::after, .nav-link::after, .known-btn::after, .import-tab::after,
+    .toggle-btn::after, .theme-option::after { transition: none; }
+    #mv-particles { display: none; }
+  }
+
   </style>
 </head>
 <body>
@@ -4073,6 +4714,17 @@ select.input-glass {
               </button>
             </div>
 
+            <div class="ocr-language-bar" aria-label="识别语言范围">
+              <label for="ocr-language-mode">识别范围：</label>
+              <select class="input-glass" id="ocr-language-mode">
+                <option value="bilingual">全保留（中文 + 英文）</option>
+                <option value="english">仅英文</option>
+                <option value="chinese">仅中文</option>
+              </select>
+              <button class="btn-glass secondary small ocr-unit-toggle" type="button" id="ocr-unit-toggle" aria-describedby="ocr-language-hint" aria-pressed="false" hidden>逐词识别 · 点击改为整句</button>
+              <span class="ocr-language-hint" id="ocr-language-hint" aria-live="polite">保留中英文；短语和完整句子不拆分。</span>
+            </div>
+
             <div class="upload-area" id="ocr-upload-area">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -4081,7 +4733,7 @@ select.input-glass {
               </svg>
               <p>点一下，或把图片拖进来</p>
               <p class="upload-hint">AI 视觉识别，单词书、截图、笔记都能认</p>
-              <p class="upload-note">只识别英文单词，中文释义由 AI 自动生成</p>
+              <p class="upload-note" id="ocr-language-note">全保留：中英文词条及紧邻释义都进入预览</p>
             </div>
             <input type="file" id="ocr-file-input" accept="image/*" capture="environment" hidden>
 
@@ -4103,6 +4755,14 @@ select.input-glass {
               <div class="progress-bar">
                 <div class="progress-fill" id="ocr-progress-bar" style="width: 0%"></div>
               </div>
+            </div>
+
+            <div class="ocr-raw-panel hidden" id="ocr-raw-panel">
+              <div class="ocr-raw-heading">
+                <label for="ocr-raw-text">识别原文（可修改后重新解析）</label>
+                <button class="btn-glass secondary small" type="button" id="ocr-reparse-btn">按当前范围重解析</button>
+              </div>
+              <textarea class="input-glass" id="ocr-raw-text" rows="6" spellcheck="false" placeholder="OCR 原文会显示在这里"></textarea>
             </div>
           </div>
         </div>
@@ -4157,6 +4817,13 @@ select.input-glass {
         <!-- Import Preview -->
         <div class="import-preview hidden" id="import-preview">
           <h4>导入预览</h4>
+          <div class="preview-toolbar">
+            <span id="preview-summary">识别结果可在导入前编辑</span>
+            <div class="preview-toolbar-actions">
+              <button class="btn-glass secondary small" type="button" id="preview-merge-btn">合并选中</button>
+              <button class="btn-glass secondary small" type="button" id="preview-split-btn">拆分选中</button>
+            </div>
+          </div>
           <div class="preview-book-select">
             <label>导入到单词书：</label>
             <select class="input-glass" id="preview-book-select"></select>
@@ -4237,41 +4904,7 @@ function formatStudySentence(sentence, word, concealWord = false) {
  * Format: word meaning (optional sentence on next line)
  */
 function parseImportText(text) {
-  // Normalize line endings
-  const lines = text.replace(/\r\n/g, '\n').split('\n').map(l => l.trim()).filter(l => l);
-  const words = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    // A valid word-meaning line must:
-    // 1. Start with a single word (or hyphenated word) - no spaces in the English word part
-    // 2. Followed by whitespace and Chinese meaning
-    // 3. The meaning part must contain Chinese characters
-    const match = line.match(/^([a-zA-Z]+(?:[-'][a-zA-Z]+)*)\s+(.+)$/);
-
-    if (match && /[\u4e00-\u9fa5]/.test(match[2])) {
-      const word = match[1].trim();
-      const meaning = match[2].trim();
-      let sentence = '';
-
-      // Check if next line is a sentence (doesn't contain Chinese and doesn't match word-meaning)
-      if (i + 1 < lines.length) {
-        const nextLine = lines[i + 1];
-        const nextMatch = nextLine.match(/^([a-zA-Z]+(?:[-'][a-zA-Z]+)*)\s+(.+)$/);
-        // Next line is a sentence if it doesn't match word-meaning pattern OR doesn't have Chinese
-        if (!nextMatch || !/[\u4e00-\u9fa5]/.test(nextMatch[2])) {
-          sentence = nextLine;
-          i++;
-        }
-      }
-      words.push({ word, meaning, sentence });
-    }
-    i++;
-  }
-
-  return words;
+  return parseFlexibleImportText(text, { languageMode: 'bilingual', allowEmptyMeaning: false });
 }
 
 /**
@@ -4485,8 +5118,9 @@ class SpeechService {
   }
 
   speak(text, options = {}) {
+    const chinese = /[\u3400-\u9fff]/.test(String(text || '')) && !/[A-Za-z]/.test(String(text || ''));
     if (!this.synth || !text) {
-      this.playRemoteFallback(text);
+      if (!chinese && text) this.playRemoteFallback(text);
       return;
     }
 
@@ -4494,10 +5128,10 @@ class SpeechService {
     this.synth.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = options.voice || this.preferredVoice;
+    utterance.voice = options.voice || (chinese ? this.voices.find(v => v.lang.startsWith('zh')) || null : this.preferredVoice);
     utterance.rate = options.rate || this.rate;
     utterance.pitch = options.pitch || this.pitch;
-    utterance.lang = options.lang || 'en-US';
+    utterance.lang = options.lang || (chinese ? 'zh-CN' : 'en-US');
     utterance.volume = options.volume || 1.0;
 
     utterance.onstart = () => {
@@ -4513,7 +5147,7 @@ class SpeechService {
     utterance.onerror = (e) => {
       this.isSpeaking = false;
       window.dispatchEvent(new CustomEvent('speech-end'));
-      this.playRemoteFallback(text);
+      if (!chinese) this.playRemoteFallback(text);
     };
 
     this.synth.speak(utterance);
@@ -5133,14 +5767,18 @@ class LLMService {
     }
   }
 
-  async refineOCRText(ocrText) {
-    const prompt = `你是英语手写单词表清洗助手。根据 OCR 原文提取所有英文单词及其紧邻的中文释义。
+  async refineOCRText(ocrText, languageMode = 'bilingual', unitMode = 'group') {
+    const scopeInstruction = languageMode === 'chinese'
+      ? (unitMode === 'word' ? '只列出原文中的中文词语，不要英文，不要按汉字逐字切分' : '只列出中文，短语和完整句子保持整体，不要英文')
+      : languageMode === 'english'
+        ? (unitMode === 'word' ? '只列出原文中的英文单词；多词短语或句子拆成单词，禁止中文' : '只列出英文，多词短语和完整句子保持整体，禁止中文')
+        : '原文中中文、英文都保留；中英紧邻时配成一条英文词条加中文释义，独立中文词条也列出，短语和整句保持整体';
+    const prompt = `你是 OCR 图片文字校对助手。
 要求：
-1. 忽略学校名称、网址、地址、邮编、年份等页眉页脚
-2. 合并重复行，修正常见 OCR 拼写错误
-3. 不要凭空添加原文中没有的单词
-4. 保持原单词表的阅读顺序
-5. 严格返回 JSON 对象：{"items":[{"word":"英文单词","meaning":"中文释义"}]}
+1. 忽略学校名称、网址、地址等明显页眉页脚；不得凭空补写词条或翻译
+2. 尽量保留原文从上到下、从左到右的顺序；不要遗漏有效词条
+3. ${scopeInstruction}
+4. 严格返回 JSON 对象：{"items":[{"word":"图片中的中文或英文词条","meaning":"原文有对应中文释义时填写，否则留空"}]}
 
 OCR 原文：
 ${String(ocrText || '').slice(0, 24000)}`;
@@ -5162,17 +5800,22 @@ ${String(ocrText || '').slice(0, 24000)}`;
     if (!Array.isArray(items)) throw new Error('DeepSeek 未返回有效单词列表');
 
     const seen = new Set();
-    return items.map(item => ({
-      word: String(item?.word || '').trim(),
-      meaning: String(item?.meaning || '').trim(),
-      sentence: '',
-      confidence: 0.96
-    })).filter(item => {
-      const key = item.word.toLowerCase();
-      if (!/^[a-z]+(?:[-'][a-z]+)*$/i.test(item.word) || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const result = [];
+    for (const item of items) {
+      const raw = String(item?.word || '').trim();
+      if (!raw) continue;
+      const parsed = parseOCRImportText(raw, { languageMode, unitMode });
+      for (const candidate of parsed) {
+        const key = candidate.word.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        candidate.meaning = languageMode === 'bilingual' && importIsValidEnglish(candidate.word)
+          ? importCleanMeaning(item?.meaning || candidate.meaning) : '';
+        candidate.confidence = 0.85;
+        result.push(candidate);
+      }
+    }
+    return result;
   }
 
   // Raw single-turn chat — used by the AI connection tester.
@@ -5181,14 +5824,14 @@ ${String(ocrText || '').slice(0, 24000)}`;
       { temperature: 0.7, max_tokens: 512 });
   }
 
-  async visionOCR(imageDataUrl) {
-    const prompt = `请识别图片里的英文单词表。
+  async visionOCR(imageDataUrl, languageMode = 'bilingual') {
+    // Keep raw text in both languages so switching scope can reparse without reuploading.
+    const prompt = `请逐行转写图片中的文字。
 要求：
-1. 只提取英文单词和紧邻的中文释义，不要解释
-2. 每个条目一行，格式为：word 中文释义
-3. 如果没有中文释义，只输出英文单词
-4. 保持从上到下、从左到右的阅读顺序
-5. 不要返回 Markdown 表格`;
+1. 忽略网址、学校名称、页眉页脚等明显噪声
+2. 中英文原文都要转写；按原行保留文字与标点，不翻译、不增补、不合并行
+3. 保持从上到下、从左到右的阅读顺序
+4. 不要返回 Markdown 表格`;
 
     const content = await this._chat([
       {
@@ -5835,7 +6478,7 @@ class OCREngine {
     return { text: combinedText, source: 'glm' };
   }
 
-  async recognizeCustomVision(file, onProgress) {
+  async recognizeCustomVision(file, onProgress, languageMode = 'bilingual') {
     if (!llmService.canGenerate()) {
       const e = new Error('自定义 OCR 模型未配置');
       e.type = 'auth';
@@ -5856,7 +6499,7 @@ class OCREngine {
 
     let text;
     try {
-      text = await llmService.visionOCR(dataUrl);
+      text = await llmService.visionOCR(dataUrl, languageMode);
     } catch (err) {
       const e = new Error('自定义视觉模型识别失败: ' + (err.message || err));
       e.type = 'unknown';
@@ -5977,6 +6620,7 @@ class OCREngine {
   async recognize(file, onProgress, options = {}) {
     const mode = options.mode || this.getMode();
     const onSlow = options.onSlow;
+    const languageMode = options.languageMode || 'bilingual';
 
     if (mode === 'tesseract') {
       return this.recognizeTesseract(file, onProgress);
@@ -5990,7 +6634,7 @@ class OCREngine {
 
     try {
       if (mode === 'custom') {
-        return await this.recognizeCustomVision(file, onProgress);
+        return await this.recognizeCustomVision(file, onProgress, languageMode);
       }
       return await this.recognizeGLM(file, onProgress, onSlow);
     } catch (err) {
@@ -6113,16 +6757,21 @@ class WordDatabase {
 
   async deleteBook(id) {
     await this.init();
-    const books = this.data.books;
-    const defaultBook = books.find(b => b.id !== id) || books[0];
-    // 把该书里的词移到默认书
-    if (defaultBook) {
-      for (const w of this.data.words) {
-        if (w.bookId === id) w.bookId = defaultBook.id;
-      }
+    if (!this.data.books.some(book => book.id === id)) return;
+    const remainingBooks = this.data.books.filter(book => book.id !== id);
+    if (remainingBooks.length === 0) {
+      remainingBooks.push({
+        id: this.data.nextBookId++,
+        name: '默认单词书',
+        createdAt: Date.now()
+      });
     }
-    this.data.books = books.filter(b => b.id !== id);
-    this._ensureDefaultBook();
+    // Create the destination before moving words, including when deleting the last book.
+    const defaultBook = remainingBooks[0];
+    for (const word of this.data.words) {
+      if (word.bookId === id) word.bookId = defaultBook.id;
+    }
+    this.data.books = remainingBooks;
     this._write();
   }
 
@@ -6177,7 +6826,7 @@ class WordDatabase {
 
   async getUnlearnedWords() {
     const all = await this.getAllWords();
-    return all.filter(w => (w.reviewCount || 0) === 0);
+    return all.filter(w => (w.reviewCount || 0) === 0 && !settings.isMastered(w));
   }
 
   async batchImport(wordsArray, bookId) {
@@ -6212,19 +6861,22 @@ class WordDatabase {
 
   // ===== Study Record Operations =====
 
-  async recordStudy(wordId, isCorrect) {
+  async recordStudy(wordId, isCorrect, updates = {}) {
     await this.init();
     const word = this.data.words.find(w => w.id === wordId);
-    if (word) {
-      word.reviewCount = (word.reviewCount || 0) + 1;
-      if (isCorrect) word.correctCount = (word.correctCount || 0) + 1;
-      word.lastReviewed = Date.now();
-    }
+    if (!word) throw new Error('Word not found');
+    const isReview = (word.reviewCount || 0) > 0;
+    const reviewedAt = Date.now();
+    Object.assign(word, updates);
+    word.reviewCount = (word.reviewCount || 0) + 1;
+    if (isCorrect) word.correctCount = (word.correctCount || 0) + 1;
+    word.lastReviewed = reviewedAt;
     this.data.records.push({
       id: this.data.nextRecordId++,
       wordId,
       isCorrect: !!isCorrect,
-      date: Date.now()
+      isReview,
+      date: reviewedAt
     });
     this._write();
   }
@@ -6303,6 +6955,7 @@ class WordDatabase {
           id: this.data.nextRecordId++,
           wordId: mappedWordId,
           isCorrect: !!record.isCorrect,
+          ...(typeof record.isReview === 'boolean' ? { isReview: record.isReview } : {}),
           date: record.date || Date.now()
         });
       }
@@ -6313,7 +6966,9 @@ class WordDatabase {
   async clearAllWords() {
     await this.init();
     this.data.words = [];
+    this.data.records = [];
     this.data.nextWordId = 1;
+    this.data.nextRecordId = 1;
     this._write();
   }
 
@@ -6327,14 +6982,14 @@ class WordDatabase {
   async getStats() {
     const words = await this.getAllWords();
     const total = words.length;
-    const mastered = words.filter(w => (w.correctCount || 0) >= 3).length;
+    const mastered = words.filter(w => settings.isMastered(w)).length;
     return { total, mastered };
   }
 
   async getBookStats(bookId) {
     const words = await this.getWordsByBook(bookId);
     const total = words.length;
-    const mastered = words.filter(w => (w.correctCount || 0) >= 3).length;
+    const mastered = words.filter(w => settings.isMastered(w)).length;
     return { total, mastered };
   }
 }
@@ -6346,6 +7001,7 @@ const db = new WordDatabase();
 
 const AUTO_BACKUP_KEY = 'vocab_auto_folder_backup';
 const LAST_BACKUP_KEY = 'vocab_last_folder_backup';
+const BACKUP_REVIEW_KEY = 'vocab_folder_backup_needs_review';
 const BACKUP_FILE_NAME = '折千词数据.json';
 
 class BackupHandleStore {
@@ -6395,6 +7051,7 @@ class LocalBackupService {
     this.directoryHandle = null;
     this.writeTimer = 0;
     this.writing = false;
+    this.backupNeedsReview = localStorage.getItem(BACKUP_REVIEW_KEY) === 'true';
   }
 
   isSupported() {
@@ -6407,6 +7064,11 @@ class LocalBackupService {
 
   setAutoEnabled(enabled) {
     localStorage.setItem(AUTO_BACKUP_KEY, enabled ? 'true' : 'false');
+  }
+
+  setBackupNeedsReview(required) {
+    this.backupNeedsReview = required;
+    localStorage.setItem(BACKUP_REVIEW_KEY, required ? 'true' : 'false');
   }
 
   async init() {
@@ -6433,8 +7095,12 @@ class LocalBackupService {
         await this.chooseFolder();
         return;
       }
-      this.setAutoEnabled(event.target.checked);
-      if (event.target.checked) await this.backupNow(false);
+      if (event.target.checked) {
+        const ok = await this.backupNow(false);
+        this.setAutoEnabled(ok);
+      } else {
+        this.setAutoEnabled(false);
+      }
       await this.updateUI();
     });
     this.init();
@@ -6459,12 +7125,26 @@ class LocalBackupService {
         mode: 'readwrite',
         startIn: 'documents'
       });
-      this.directoryHandle = handle;
+      let existingBackup = false;
+      try {
+        await handle.getFileHandle(BACKUP_FILE_NAME);
+        existingBackup = true;
+      } catch (err) {
+        if (err?.name !== 'NotFoundError') throw err;
+      }
       await this.handleStore.set(handle);
-      this.setAutoEnabled(true);
+      clearTimeout(this.writeTimer);
+      this.directoryHandle = handle;
+      this.setBackupNeedsReview(existingBackup);
+      this.setAutoEnabled(!existingBackup);
+      localStorage.removeItem(LAST_BACKUP_KEY);
       try { await navigator.storage?.persist?.(); } catch {}
-      await this.backupNow(false);
-      showToast('已连接备份文件夹', 'success');
+      if (existingBackup) {
+        showToast('已保留文件夹中的备份，自动备份已暂停；请先恢复，或点击立即备份确认覆盖', 'warning', 5000);
+      } else {
+        const ok = await this.backupNow(false);
+        showToast(ok ? '已连接备份文件夹' : '文件夹已连接，但首次备份失败，请点击立即备份重试', ok ? 'success' : 'warning');
+      }
     } catch (err) {
       if (err?.name !== 'AbortError') {
         console.warn('选择备份文件夹失败:', err);
@@ -6475,7 +7155,7 @@ class LocalBackupService {
   }
 
   scheduleWrite(data) {
-    if (!this.directoryHandle || !this.isAutoEnabled()) return;
+    if (!this.directoryHandle || this.backupNeedsReview || !this.isAutoEnabled()) return;
     clearTimeout(this.writeTimer);
     this.writeTimer = setTimeout(() => this.writeSnapshot(data, false), 1500);
   }
@@ -6488,13 +7168,23 @@ class LocalBackupService {
       await this.updateUI();
       return false;
     }
+    const needsReview = this.backupNeedsReview;
+    if (needsReview) {
+      const confirmed = await showConfirm('文件夹中已有备份，确定用当前浏览器的数据覆盖它吗？若要恢复旧数据，请取消并点击“从备份恢复”。', '覆盖已有备份');
+      if (!confirmed) {
+        await this.updateUI();
+        return false;
+      }
+      this.setBackupNeedsReview(false);
+    }
     const ok = await this.writeSnapshot(db.data, notify);
+    if (!ok && needsReview) this.setBackupNeedsReview(true);
     await this.updateUI();
     return ok;
   }
 
   async writeSnapshot(data, notify = false) {
-    if (this.writing || !this.directoryHandle) return false;
+    if (this.writing || !this.directoryHandle || this.backupNeedsReview) return false;
     this.writing = true;
     try {
       const fileHandle = await this.directoryHandle.getFileHandle(BACKUP_FILE_NAME, { create: true });
@@ -6531,7 +7221,11 @@ class LocalBackupService {
       const text = await file.text();
       const confirmed = await showConfirm('确定从文件夹备份恢复吗？当前浏览器中的单词本将被替换。');
       if (!confirmed) return;
+      clearTimeout(this.writeTimer);
       await db.importData(text);
+      this.setBackupNeedsReview(false);
+      this.setAutoEnabled(true);
+      await this.updateUI();
       showToast('恢复成功，正在刷新', 'success');
       setTimeout(() => location.reload(), 500);
     } catch (err) {
@@ -6546,6 +7240,7 @@ class LocalBackupService {
     clearTimeout(this.writeTimer);
     this.directoryHandle = null;
     this.setAutoEnabled(false);
+    this.setBackupNeedsReview(false);
     try { await this.handleStore.clear(); } catch {}
     await this.updateUI();
     showToast('已断开备份文件夹');
@@ -6570,7 +7265,9 @@ class LocalBackupService {
 
     const last = parseInt(localStorage.getItem(LAST_BACKUP_KEY), 10);
     if (detail) detail.textContent = connected
-      ? (Number.isFinite(last) ? `最近备份：${new Date(last).toLocaleString()}` : `将创建 ${BACKUP_FILE_NAME}`)
+      ? (this.backupNeedsReview
+        ? '已有备份，自动备份已暂停；请先恢复，或点击立即备份确认覆盖'
+        : Number.isFinite(last) ? `最近备份：${new Date(last).toLocaleString()}` : `将创建 ${BACKUP_FILE_NAME}`)
       : (supported ? '数据目前仅保存在此浏览器中' : '仍可使用下方的手动导出与导入');
 
     if (selectButton) {
@@ -6704,7 +7401,7 @@ class SettingsService {
 
   // Backend-only target score, derived from word length and scaled by difficulty.
   computeTargetScore(word) {
-    const len = (word || '').replace(/[^a-zA-Z]/g, '').length;
+    const len = (word || '').replace(/[^a-zA-Z\u3400-\u9fff]/g, '').length;
     let base;
     if (len <= 5) base = 3;
     else if (len <= 8) base = 5;
@@ -6821,7 +7518,8 @@ class StudyMode {
     this.renderCurrent();
   }
 
-  getCardMode() {
+  getCardMode(word) {
+    if (word && !String(word.meaning || '').trim()) return 'en-to-cn';
     return Math.random() > 0.5 ? 'en-to-cn' : 'cn-to-en';
   }
 
@@ -6849,7 +7547,7 @@ class StudyMode {
     if (this.queue.length === 0) { this.renderComplete(); return; }
 
     const word = this.queue[0];
-    const mode = this.getCardMode();
+    const mode = this.getCardMode(word);
     this.current = { word, mode, revealed: false, locked: false, scored: false, startTime: Date.now() };
     this.isComplete = false;
 
@@ -6866,7 +7564,7 @@ class StudyMode {
   cardHtml(word, mode) {
     const isEnToCn = mode === 'en-to-cn';
     const displayText = isEnToCn ? word.word : word.meaning;
-    const hiddenText = isEnToCn ? word.meaning : word.word;
+    const hiddenText = isEnToCn ? (word.meaning || '暂无释义，可在词本中补充') : word.word;
     const sentenceHtml = formatStudySentence(word.sentence, word.word, !isEnToCn);
     const phoneticHtml = this.renderPhonetic(word, isEnToCn);
     const hasSentence = !!(word.sentence && word.sentence.trim());
@@ -7161,7 +7859,7 @@ class StudyMode {
     if (mastered) word.mastered = true;
 
     try {
-      await db.updateWord(word.id, { currentScore: cur, mastered: !!word.mastered });
+      await db.recordStudy(word.id, delta > 0, { currentScore: cur, mastered: !!word.mastered });
     } catch (err) {
       console.warn('Failed to save score:', err);
     }
@@ -7329,6 +8027,7 @@ class ReviewMode {
     if (!this.listEl) return;
     let drag = null;
     let snapRaf = null;
+    let snapFold = null;
 
     const coverSel = () => this.maskMode === 'english' ? '.fold-en'
       : this.maskMode === 'chinese' ? '.fold-cn' : null;
@@ -7338,93 +8037,32 @@ class ReviewMode {
     // progress is expected to be in [0, 1]; overshoot (>1) is allowed for
     // elastic snap animations and will be clamped gently.
     const applyFold = (d, progress) => {
-      const { W, H, front, flap, row, startY } = d;
+      const { H, front, flap, leaf, row, startY } = d;
       const isEn = d.isEnglish;
+      const turned = Math.max(0, Math.min(1, progress));
+      const yBias = Math.max(-1, Math.min(1, ((startY || H / 2) - H / 2) / Math.max(1, H / 2)));
+      const strips = d.cover.querySelectorAll('.fold-strip');
+      const last = Math.max(1, strips.length - 1);
+      const zone = 0.24;
+      const travel = turned * (1 + zone);
       const dir = isEn ? -1 : 1;
-      const p = Math.max(0, progress);
-      // Allow slight overshoot (up to 1.08) for elastic snap, but keep
-      // geometry within reasonable bounds.
-      const t = Math.min(1.08, p);
-
-      const boundaryX = isEn ? W * (1 - Math.min(1, t)) : W * Math.min(1, t);
-      const turnedW = Math.max(1, W * Math.min(1, t));
-      // Flap is the curled page edge — thinner than the turned width because
-      // of perspective foreshortening. Width grows then slightly shrinks at 100%
-      // as the page flattens against the back.
-      const flapW = turnedW * (0.62 + 0.20 * Math.sin(Math.min(1, t) * Math.PI));
-      const flapLeft = isEn ? boundaryX - flapW : boundaryX;
-
-      const angle = dir * (6 + t * 174);
-      const lift = Math.sin(Math.min(1, t) * Math.PI) * 18;
-      // Vertical bias from where the user grabbed — tilts the curl up/down
-      const yBias = Math.max(-1, Math.min(1, ((startY || H/2) - H/2) / Math.max(1, H/2)));
-      const skew = yBias * Math.sin(Math.min(1, t) * Math.PI) * 10;
-      const scaleY = 1 - Math.abs(yBias) * Math.sin(Math.min(1, t) * Math.PI) * 0.10;
-
-      // Front cover: clip to the un-folded portion
-      const fL = isEn ? 0 : boundaryX;
-      const fR = isEn ? boundaryX : W;
-      front.style.clipPath = `polygon(${fL}px 0, ${fR}px 0, ${fR}px ${H}px, ${fL}px ${H}px)`;
-
-      // Flap: irregular clip-path mimics the curled edge of a real page
-      flap.style.clipPath = isEn
-        ? 'polygon(6% 2%, 100% 0, 100% 100%, 6% 98%, 0 80%, 3% 50%, 0 20%)'
-        : 'polygon(0 0, 94% 2%, 100% 20%, 97% 50%, 100% 80%, 94% 98%, 0 100%)';
-      flap.style.transformOrigin = isEn ? 'right center' : 'left center';
-      flap.style.left = `${flapLeft}px`;
-      flap.style.width = `${flapW}px`;
-
-      // Revealed content slides in from the crease — mirrors the detail panel
-      // flip: content emerges from where the page lifts off.
-      const revealX = (1 - Math.min(1, t)) * (isEn ? -14 : 14);
-      const revealOp = 0.15 + Math.min(1, t) * 0.85;
-      const cellClasses = isEn ? ['word-cell', 'phonetic-cell'] : ['meaning-cell'];
-      cellClasses.forEach(cls => {
-        const el = row.querySelector('.' + cls);
-        if (el) {
-          el.style.transform = `translateX(${revealX.toFixed(1)}px)`;
-          el.style.opacity = String(revealOp.toFixed(2));
-        }
+      strips.forEach((strip, index) => {
+        const fromEdge = isEn ? (last - index) / last : index / last;
+        const x = (travel - fromEdge) / zone;
+        const bend = Math.max(0, Math.min(1, x));
+        const lift = Math.sin(bend * Math.PI) * (16 + Math.abs(yBias) * 10);
+        const tilt = yBias * Math.sin(bend * Math.PI) * 9;
+        const passed = bend > 0.92;
+        strip.style.opacity = passed ? '0' : '1';
+        strip.style.transform = `translateZ(${lift.toFixed(1)}px) rotateX(${tilt.toFixed(2)}deg) rotateY(${(dir * bend * 178).toFixed(2)}deg)`;
       });
 
-      // Front cover lifts slightly at the crease and casts a soft shadow
-      front.style.transformOrigin = `${boundaryX}px center`;
-      front.style.transform = `translateZ(${(lift * 0.12).toFixed(1)}px)`;
-      const shX = isEn ? 5 : -5;
-      front.style.boxShadow = `inset ${isEn ? '-' : ''}${Math.round(8 + Math.min(1, t) * 22)}px 0 28px rgba(0,0,0,${(0.06 + Math.min(1, t) * 0.14).toFixed(3)})`;
-      front.style.filter = `brightness(${(1 - Math.min(1, t) * 0.04).toFixed(3)}) drop-shadow(${shX}px 3px 8px rgba(0,0,0,${(0.07 + Math.min(1, t) * 0.22).toFixed(3)}))`;
-
-      // Curled flap: rotateY + skewY + scaleY reads as a real page curl,
-      // not a flat rectangle flipping over.
-      flap.style.transform =
-        `translateZ(${lift.toFixed(1)}px) ` +
-        `rotateY(${angle.toFixed(1)}deg) ` +
-        `skewY(${skew.toFixed(1)}deg) ` +
-        `scaleY(${scaleY.toFixed(3)})`;
-      // Fade in quickly at start, then fade slightly near full-open as the
-      // edge thins out against the back of the page.
-      const pp = Math.min(1, p);
-      flap.style.opacity = pp < 0.02 ? '0'
-        : String(Math.min(1, (1 - Math.max(0, pp - 0.9) / 0.1) * 0.3) * (0.5 + pp * 0.5));
-      flap.classList.toggle('active', pp > 0.02);
-
-      d.cover.style.setProperty('--fold', pp.toFixed(3));
-      d.frac = pp;
+      d.cover.style.setProperty('--fold', turned.toFixed(3));
+      d.frac = turned;
     };
 
     const clearFold = (d) => {
-      d.front.style.clipPath = '';
-      d.front.style.transform = '';
-      d.front.style.transformOrigin = '';
-      d.front.style.boxShadow = '';
-      d.front.style.filter = '';
-      d.flap.classList.remove('active');
-      d.flap.style.clipPath = '';
-      d.flap.style.transform = '';
-      d.flap.style.transformOrigin = '';
-      d.flap.style.opacity = '';
-      d.flap.style.left = '';
-      d.flap.style.width = '';
+      d.cover.querySelectorAll('.fold-strip').forEach(strip => { strip.style.transform = ''; strip.style.opacity = ''; });
       d.cover.style.removeProperty('--fold');
       // Reset revealed content cells — the resting revealed state is handled
       // by CSS classes (revealed-en / revealed-cn), not inline styles.
@@ -7437,6 +8075,30 @@ class ReviewMode {
       });
     };
 
+    const finishSnap = () => {
+      if (snapRaf !== null) cancelAnimationFrame(snapRaf);
+      snapRaf = null;
+      if (!snapFold) return;
+      const { data, open } = snapFold;
+      snapFold = null;
+      data.row.classList.toggle(data.openClass, open);
+      clearFold(data);
+      data.cover.classList.remove('dragging', 'snapping');
+    };
+
+    // Always settle the previous row before starting another fold or changing views.
+    this.cancelFoldDrag = () => {
+      finishSnap();
+      if (!drag) return;
+      const active = drag;
+      drag = null;
+      if (!active.reclose) {
+        clearFold(active);
+        active.cover.classList.remove('dragging', 'snapping');
+        try { active.cover.releasePointerCapture(active.pointerId); } catch (err) {}
+      }
+    };
+
     const onDown = (e) => {
       if (this.maskMode === 'none') return;
       if (e.target.closest('.row-actions')) return;
@@ -7445,7 +8107,7 @@ class ReviewMode {
       const cover = row.querySelector(coverSel());
       if (!cover) return;
       const openClass = this.maskMode === 'english' ? 'revealed-en' : 'revealed-cn';
-      if (snapRaf) { cancelAnimationFrame(snapRaf); snapRaf = null; }
+      this.cancelFoldDrag();
 
       // Tap an already-open row to fold the cover back over it.
       if (row.classList.contains(openClass)) {
@@ -7464,10 +8126,12 @@ class ReviewMode {
         row, cover, openClass,
         front: cover.querySelector('.fold-front'),
         flap: cover.querySelector('.fold-flap'),
+        leaf: cover.querySelector('.fold-leaf'),
         W, H,
         isEnglish: isEn,
         startX,
         startY: ly,
+        pointerId: e.pointerId,
         frac: 0,
         fromFrac: 0,
       };
@@ -7496,18 +8160,43 @@ class ReviewMode {
       const d = drag; drag = null;
 
       if (d.reclose) {
-        d.cover.classList.add('snapping');
+        const rect = d.cover.getBoundingClientRect();
+        const closing = {
+          row: d.row,
+          cover: d.cover,
+          openClass: d.openClass,
+          front: d.cover.querySelector('.fold-front'),
+          flap: d.cover.querySelector('.fold-flap'),
+          leaf: d.cover.querySelector('.fold-leaf'),
+          W: rect.width,
+          H: rect.height,
+          isEnglish: d.openClass === 'revealed-en',
+          startY: rect.height / 2,
+          frac: 1,
+        };
+        d.cover.classList.add('dragging');
+        applyFold(closing, 1);
         d.row.classList.remove(d.openClass);
-        window.setTimeout(() => d.cover.classList.remove('snapping'), 320);
+        const fromFrac = 1;
+        const t0 = performance.now();
+        snapFold = { data: closing, open: false };
+        const step = (now) => {
+          const k = Math.min(1, (now - t0) / 460);
+          const eased = 1 - Math.pow(1 - k, 3);
+          applyFold(closing, fromFrac * (1 - eased));
+          if (k < 1) { snapRaf = requestAnimationFrame(step); return; }
+          finishSnap();
+        };
+        snapRaf = requestAnimationFrame(step);
         return;
       }
 
-      d.cover.classList.remove('dragging');
       const open = d.frac >= 0.5;
       const fromFrac = d.frac;
       const toFrac = open ? 1 : 0;
       const t0 = performance.now();
       const dur = open ? 420 : 280;
+      snapFold = { data: d, open };
       const step = (now) => {
         const k = Math.min(1, (now - t0) / dur);
         let eased;
@@ -7519,10 +8208,8 @@ class ReviewMode {
         }
         applyFold(d, fromFrac + (toFrac - fromFrac) * eased);
         if (k < 1) { snapRaf = requestAnimationFrame(step); return; }
-        snapRaf = null;
-        clearFold(d);
+        finishSnap();
         d.cover.classList.add('snapping');
-        d.row.classList.toggle(d.openClass, open);
         window.setTimeout(() => d.cover.classList.remove('snapping'), 420);
       };
       snapRaf = requestAnimationFrame(step);
@@ -7531,7 +8218,7 @@ class ReviewMode {
     this.listEl.addEventListener('pointerdown', onDown);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
+    window.addEventListener('pointercancel', this.cancelFoldDrag);
   }
 
   async onShow() {
@@ -7544,6 +8231,7 @@ class ReviewMode {
   }
 
   onHide() {
+    this.cancelFoldDrag?.();
     speechService.stop();
   }
 
@@ -7551,6 +8239,7 @@ class ReviewMode {
 
   renderBookList() {
     if (!this.bookListEl) return;
+    this.cancelFoldDrag?.();
 
     this.bookListEl.classList.remove('hidden');
     if (this.listEl) this.listEl.classList.add('hidden');
@@ -7657,6 +8346,7 @@ class ReviewMode {
 
   renderList() {
     if (!this.listEl) return;
+    this.cancelFoldDrag?.();
 
     this.bookListEl.classList.add('hidden');
     this.listEl.classList.remove('hidden');
@@ -7686,6 +8376,7 @@ class ReviewMode {
       return;
     }
 
+    const foldStrips = Array.from({ length: 18 }, () => '<div class="fold-strip"><span class="fold-face"></span><span class="fold-back"></span></div>').join('');
     this.listEl.innerHTML = `
       <div style="margin-bottom:1rem;">
         <button class="book-back-btn" onclick="reviewMode.backToBookList()">
@@ -7723,22 +8414,18 @@ class ReviewMode {
             </button>
           </div>
           <div class="fold-cover fold-en" aria-hidden="true">
-            <div class="fold-front">
-              <span class="fold-hint">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h7a3 3 0 0 1 3 3v15a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 3h-7a3 3 0 0 0-3 3"/></svg>
-                抓右角往左掀 · 英文
-              </span>
-            </div>
-            <div class="fold-flap"></div>
+            <div class="fold-sheet">${foldStrips}</div>
+            <span class="fold-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h7a3 3 0 0 1 3 3v15a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 3h-7a3 3 0 0 0-3 3"/></svg>
+              向左卷开 · 英文
+            </span>
           </div>
           <div class="fold-cover fold-cn" aria-hidden="true">
-            <div class="fold-front">
-              <span class="fold-hint">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h7a3 3 0 0 1 3 3v15a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 3h-7a3 3 0 0 0-3 3"/></svg>
-                抓左角往右掀 · 中文
-              </span>
-            </div>
-            <div class="fold-flap"></div>
+            <div class="fold-sheet">${foldStrips}</div>
+            <span class="fold-hint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h7a3 3 0 0 1 3 3v15a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 3h-7a3 3 0 0 0-3 3"/></svg>
+              向右卷开 · 中文
+            </span>
           </div>
           <div class="word-detail">
             <div class="word-detail-inner">
@@ -7828,6 +8515,7 @@ class ReviewMode {
   }
 
   setMaskMode(mode) {
+    this.cancelFoldDrag?.();
     this.maskMode = mode;
 
     document.querySelectorAll('.mask-toggle').forEach(btn => {
@@ -7930,12 +8618,270 @@ const reviewMode = new ReviewMode();
 
 const EXAMPLE_SOURCE_KEY = 'vocab_example_source';
 
+// ===== Import parsing helpers (local test build) =====
+let IMPORT_UID_SEED = 0;
+function makeImportUid() {
+  IMPORT_UID_SEED += 1;
+  return 'import-' + Date.now().toString(36) + '-' + IMPORT_UID_SEED.toString(36);
+}
+function importHasChinese(value) {
+  return /[\u3400-\u9fff]/.test(String(value || ''));
+}
+function importEnglishWords(value) {
+  return String(value || '').match(/[A-Za-z]+(?:[-'][A-Za-z]+)*/g) || [];
+}
+function importNormalizeLine(value) {
+  return String(value || '')
+    .replace(/^\s*[#>*]+\s*/, '')
+    .replace(/^\s*[-*]\s+/, '')
+    .replace(/^\s*[|]+\s*|\s*[|]+\s*$/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+function importCleanMeaning(value) {
+  return String(value || '')
+    .replace(/[|]+/g, ' ')
+    .replace(/^[\s,.;:：；，。！？!?—–-]+|[\s,.;:：；，。！？!?”’]+$/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+function importCleanEnglish(value) {
+  return String(value || '')
+    .replace(/^[\s|,.;:：；，。！？!?”’/]+|[\s|,.;:：；，。！？!?”’/]+$/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+function importIsNoise(value) {
+  const text = String(value || '').trim();
+  return !text || /(?:https?|ftp)\s*:\/\/|\bwww\.|\.(?:com|cn|net|org)\b|@/i.test(text) ||
+    /^(?:学校名称|姓名|地址|电话|邮编|班级|年级)\s*[：:]?/i.test(text) ||
+    /^\d{2,4}(?:[./-]\d{1,2})?(?:[./-]\d{1,2})?$/.test(text);
+}
+function importIsValidEnglish(value) {
+  const text = importCleanEnglish(value);
+  if (importIsNoise(text) || /[0-9_]/.test(text)) return false;
+  const words = importEnglishWords(text);
+  if (!words.length) return false;
+  const residual = text.replace(/[A-Za-z]+(?:[-'][A-Za-z]+)*/g, '').replace(/[\s.,!?;:'"()\-—–]+/g, '');
+  return !residual;
+}
+function importLooksSentence(value) {
+  const text = importCleanEnglish(value);
+  const words = importEnglishWords(text);
+  if (!words.length) return false;
+  if (/[.!?。！？]$/.test(String(value || '').trim())) return true;
+  if (/^(?:i|you|he|she|we|they|it|this|that|there)\b/i.test(text) && words.length >= 3) return true;
+  return words.length >= 7;
+}
+function importLooksPhrase(value) {
+  const text = importCleanEnglish(value);
+  const words = importEnglishWords(text);
+  if (words.length < 2 || words.length > 6 || importLooksSentence(text)) return false;
+  return /\b(?:to|of|in|on|at|for|with|from|by|up|out|into|care|forward|look|take|make|as)\b/i.test(text);
+}
+function importEntryType(value) {
+  const text = importCleanEnglish(value);
+  if (importLooksSentence(value)) return 'sentence';
+  if (importLooksPhrase(text)) return 'phrase';
+  return 'word';
+}
+function importExtractBilingualPairs(line) {
+  const pairs = [];
+  const pattern = /([A-Za-z][A-Za-z'’-]*(?:\s+[A-Za-z][A-Za-z'’-]*){0,7})\s*[-—:：.,;，；。！？!?|]*\s*([\u3400-\u9fff][\u3400-\u9fff、，；：:（）()\/\s]*?)(?=\s*(?:\|\s*)?(?:[A-Za-z][A-Za-z'’-]*|$))/g;
+  for (const match of String(line || '').matchAll(pattern)) {
+    const english = importCleanEnglish(match[1]);
+    const meaning = importCleanMeaning(match[2]);
+    if (importIsValidEnglish(english) && meaning) pairs.push({ english, meaning });
+  }
+  return pairs;
+}
+function importCreateEntry(english, meaning = '', confidence = 0.9) {
+  const word = importCleanEnglish(english);
+  return {
+    uid: makeImportUid(),
+    word,
+    meaning: importCleanMeaning(meaning),
+    sentence: '',
+    sentenceCn: '',
+    mnemonic: '',
+    type: importEntryType(word),
+    confidence
+  };
+}
+function parseFlexibleImportText(text, options = {}) {
+  const allowEmptyMeaning = !!options.allowEmptyMeaning;
+  const languageMode = options.languageMode === 'english' ? 'english' : 'bilingual';
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n').map(importNormalizeLine).filter(Boolean);
+  const result = [];
+  const seen = new Set();
+  const addEntry = (english, meaning = '', confidence = 0.9) => {
+    const word = importCleanEnglish(english);
+    const normalizedMeaning = languageMode === 'english' ? '' : importCleanMeaning(meaning);
+    if (!importIsValidEnglish(word) || (!allowEmptyMeaning && !normalizedMeaning)) return null;
+    const key = word.toLowerCase();
+    if (seen.has(key)) return result.find(item => item.word.toLowerCase() === key) || null;
+    const item = importCreateEntry(word, normalizedMeaning, confidence);
+    seen.add(key);
+    result.push(item);
+    return item;
+  };
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const cleanLine = line.replace(/(?:https?|ftp):\/\/\S+|\bwww\.\S+/gi, ' ').replace(/[ \t]+/g, ' ').trim();
+    if (!cleanLine || (importIsNoise(cleanLine) && !importEnglishWords(cleanLine).length)) continue;
+    const pairs = importExtractBilingualPairs(cleanLine);
+    if (pairs.length) {
+      const added = pairs.map(pair => addEntry(pair.english, pair.meaning, 0.92)).filter(Boolean);
+      if (added.length === 1 && i + 1 < lines.length) {
+        const next = lines[i + 1];
+        if (!importHasChinese(next) && importIsValidEnglish(next) && importLooksSentence(next)) {
+          added[0].sentence = next;
+          i += 1;
+        }
+      }
+      continue;
+    }
+    const englishOnly = languageMode === 'english' ? cleanLine.replace(/[\u3400-\u9fff]+/g, ' ') : cleanLine;
+    const candidate = importCleanEnglish(englishOnly);
+    if (!importIsValidEnglish(candidate)) continue;
+    const words = importEnglishWords(candidate);
+    // Classify before trimming final punctuation: short sentences ending in '.'
+    // must not be mistaken for unrelated words and split apart.
+    const type = importEntryType(englishOnly);
+    if (words.length > 1 && type === 'word') {
+      words.forEach(word => addEntry(word, '', 0.58));
+      continue;
+    }
+    const item = addEntry(candidate, '', type === 'sentence' ? 0.82 : 0.7);
+    if (item && type === 'sentence') {
+      item.type = 'sentence';
+      item.sentence = englishOnly.trim();
+    }
+  }
+  return result;
+}
+
+// OCR has its own scope parser; manual import keeps its existing English/meaning rules.
+function importChineseRuns(line) {
+  return String(line || '').match(/[\u3400-\u9fff]+(?:[ \t，、：:（）()《》“”‘’—\-…]+[\u3400-\u9fff]+)*[。！？!?；;]?/g) || [];
+}
+function importCleanChinese(value) {
+  return String(value || '').replace(/^[\s，、。！？!?；;：:（）()《》“”‘’—\-…]+|[\s，、。！？!?；;：:（）()《》“”‘’—\-…]+$/g, '').replace(/[ \t]+/g, ' ').trim();
+}
+function importIsValidChinese(value) {
+  const clean = importCleanChinese(value);
+  return /[\u3400-\u9fff]/.test(clean) && !/[A-Za-z0-9_@]/.test(clean) &&
+    !/[^\u3400-\u9fff\s，、。！？!?；;：:（）()《》“”‘’—\-…]/.test(clean) && !importIsNoise(clean);
+}
+function importChineseWords(value) {
+  const run = importCleanChinese(value);
+  if (!run) return [];
+  if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+    const segmenter = new Intl.Segmenter('zh', { granularity: 'word' });
+    return [...segmenter.segment(run)]
+      .filter(segment => segment.isWordLike && importIsValidChinese(segment.segment))
+      .map(segment => importCleanChinese(segment.segment));
+  }
+  // Older browsers: approximate words in pairs, never pretend each Han character is a word.
+  return (run.match(/[\u3400-\u9fff]{1,2}/g) || []).filter(importIsValidChinese);
+}
+function importOCRItemType(value, languageMode, unitMode) {
+  if (unitMode === 'word') return 'word';
+  if (languageMode === 'chinese' || (!/[A-Za-z]/.test(value) && importHasChinese(value))) {
+    const count = (String(value).match(/[\u3400-\u9fff]/g) || []).length;
+    return /[。！？!?]$/.test(String(value).trim()) || count >= 8 ? 'sentence' : count >= 3 ? 'phrase' : 'word';
+  }
+  if (importLooksSentence(value)) return 'sentence';
+  return importEnglishWords(value).length > 1 ? 'phrase' : 'word';
+}
+function importExtractOCRPairs(line) {
+  const pairs = [];
+  const pattern = /([A-Za-z][A-Za-z'’-]*(?:\s+[A-Za-z][A-Za-z'’-]*){0,24})([.!?]?)\s*[-—:：,;，；|]*\s*([\u3400-\u9fff][\u3400-\u9fff、，；：:（）()\/\s]*?)(?=[。！？!?]?\s*(?:\|\s*)?(?:[A-Za-z][A-Za-z'’-]*|$))/g;
+  for (const match of String(line || '').matchAll(pattern)) {
+    const english = importCleanEnglish(match[1]);
+    const meaning = importCleanMeaning(match[3]);
+    if (importIsValidEnglish(english) && meaning) {
+      pairs.push({ english: english + (match[2] || ''), meaning, start: match.index, end: match.index + match[0].length });
+    }
+  }
+  return pairs;
+}
+function parseOCRImportText(text, options = {}) {
+  const languageMode = ['english', 'chinese'].includes(options.languageMode) ? options.languageMode : 'bilingual';
+  const unitMode = languageMode === 'bilingual' ? 'group' : options.unitMode === 'group' ? 'group' : 'word';
+  const result = [];
+  const seen = new Map();
+  const add = (value, meaning = '', raw = value, confidence = 0.8) => {
+    const chinese = importIsValidChinese(value) && !/[A-Za-z]/.test(value);
+    const word = chinese ? importCleanChinese(value) : importCleanEnglish(value);
+    if (languageMode === 'english' && !importIsValidEnglish(word)) return;
+    if (languageMode === 'chinese' && !chinese) return;
+    if (languageMode === 'bilingual' && !chinese && !importIsValidEnglish(word)) return;
+    const key = word.toLowerCase();
+    const existing = seen.get(key);
+    if (existing) {
+      if (!existing.meaning && languageMode === 'bilingual') existing.meaning = importCleanMeaning(meaning);
+      return;
+    }
+    const type = importOCRItemType(raw, chinese ? 'chinese' : 'english', unitMode);
+    const item = {
+      uid: makeImportUid(), word,
+      meaning: languageMode === 'bilingual' && !chinese ? importCleanMeaning(meaning) : '',
+      sentence: type === 'sentence' && !chinese ? String(raw).trim() : '',
+      sentenceCn: type === 'sentence' && chinese ? String(raw).trim() : '',
+      mnemonic: '', type, confidence
+    };
+    seen.set(key, item);
+    result.push(item);
+  };
+  const addEnglish = (value, meaning = '', confidence = 0.8) => {
+    const raw = String(value || '').trim();
+    if (unitMode === 'word') importEnglishWords(raw).forEach(word => add(word, '', word, confidence));
+    else add(raw, meaning, raw, confidence);
+  };
+  const addChinese = (value, confidence = 0.78) => {
+    if (unitMode === 'word') importChineseWords(value).forEach(word => add(word, '', word, confidence));
+    else add(value, '', value, confidence);
+  };
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n').map(importNormalizeLine).filter(Boolean);
+  for (const line of lines) {
+    const cleanLine = line.replace(/(?:https?|ftp):\/\/\S+|\bwww\.\S+/gi, ' ').replace(/[ \t]+/g, ' ').trim();
+    if (!cleanLine || importIsNoise(cleanLine)) continue;
+    if (languageMode === 'chinese') {
+      importChineseRuns(cleanLine).forEach(run => addChinese(run));
+      continue;
+    }
+    const pairs = importExtractOCRPairs(cleanLine);
+    pairs.forEach(pair => addEnglish(pair.english, pair.meaning, 0.92));
+    // Remove paired spans so their Chinese meanings are not imported a second time.
+    let remainder = '';
+    let cursor = 0;
+    for (const pair of pairs) {
+      remainder += cleanLine.slice(cursor, pair.start) + ' | ';
+      cursor = pair.end;
+    }
+    remainder += cleanLine.slice(cursor);
+    for (const part of remainder.split(/[|；;]+/)) {
+      if (languageMode === 'bilingual') importChineseRuns(part).forEach(run => addChinese(run, 0.7));
+      const english = part.replace(/[\u3400-\u9fff]+/g, ' ').trim();
+      if (english) addEnglish(english, '', 0.7);
+    }
+  }
+  return result;
+}
+
 class ImportMode {
   constructor() {
     this.parsedWords = [];
     this.currentTab = 'manual';
     this.importBookId = null;
     this.exampleSource = 'none'; // 'none' | 'dict' | 'llm'
+    const savedOCRScope = localStorage.getItem('vocab_ocr_language');
+    this.ocrLanguageMode = ['english', 'chinese'].includes(savedOCRScope) ? savedOCRScope : 'bilingual';
+    this.ocrUnitMode = { english: 'word', chinese: 'word' };
+    this.rawOCRText = '';
+    this._selectedPreviewUids = new Set();
+    this._previewBookChosen = false;
   }
 
   init() {
@@ -7987,8 +8933,16 @@ class ImportMode {
           if (previewImg) previewImg.src = '';
           if (previewDiv) previewDiv.classList.add('hidden');
           if (progressDiv) progressDiv.classList.add('hidden');
+          const rawPanel = document.getElementById('ocr-raw-panel');
+          const rawEditor = document.getElementById('ocr-raw-text');
+          if (rawPanel) rawPanel.classList.add('hidden');
+          if (rawEditor) rawEditor.value = '';
+          this.rawOCRText = '';
+          this._selectedPreviewUids.clear();
           fileInput.value = '';
           this.parsedWords = [];
+          const preview = document.getElementById('import-preview');
+          if (preview && this.currentTab === 'ocr') preview.classList.add('hidden');
         });
       }
     }
@@ -8043,9 +8997,16 @@ class ImportMode {
   initOCRMode() {
     const modeSel = document.getElementById('ocr-mode');
     const configBtn = document.getElementById('ocr-model-config-btn');
+    const languageSel = document.getElementById('ocr-language-mode');
+    const unitToggle = document.getElementById('ocr-unit-toggle');
+    const reparseBtn = document.getElementById('ocr-reparse-btn');
+    const mergeBtn = document.getElementById('preview-merge-btn');
+    const splitBtn = document.getElementById('preview-split-btn');
 
     const savedMode = ocrEngine.getMode();
     if (modeSel) modeSel.value = savedMode;
+    if (languageSel) languageSel.value = this.ocrLanguageMode;
+    this.updateOCRLanguageUI();
 
     if (modeSel) {
       modeSel.addEventListener('change', () => {
@@ -8053,10 +9014,81 @@ class ImportMode {
         if (modeSel.value === 'custom') this.openLlmConfig();
       });
     }
-
-    if (configBtn) {
-      configBtn.addEventListener('click', () => this.openLlmConfig());
+    if (languageSel) {
+      languageSel.addEventListener('change', () => {
+        this.ocrLanguageMode = ['english', 'chinese'].includes(languageSel.value) ? languageSel.value : 'bilingual';
+        localStorage.setItem('vocab_ocr_language', this.ocrLanguageMode);
+        this.updateOCRLanguageUI();
+        if (this.rawOCRText.trim()) this.reparseOCRText();
+      });
     }
+    if (unitToggle) unitToggle.addEventListener('click', () => {
+      const mode = this.getOCRLanguageMode();
+      if (mode === 'bilingual') return;
+      this.ocrUnitMode[mode] = this.getOCRUnitMode() === 'word' ? 'group' : 'word';
+      this.updateOCRLanguageUI();
+      if (this.rawOCRText.trim()) this.reparseOCRText();
+    });
+    if (reparseBtn) reparseBtn.addEventListener('click', () => this.reparseOCRText());
+    if (mergeBtn) mergeBtn.addEventListener('click', () => this.mergeSelectedPreviewItems());
+    if (splitBtn) splitBtn.addEventListener('click', () => this.splitSelectedPreviewItem());
+    if (configBtn) configBtn.addEventListener('click', () => this.openLlmConfig());
+  }
+
+  getOCRLanguageMode() {
+    return ['english', 'chinese'].includes(this.ocrLanguageMode) ? this.ocrLanguageMode : 'bilingual';
+  }
+
+  getOCRUnitMode() {
+    const mode = this.getOCRLanguageMode();
+    return mode === 'bilingual' ? 'group' : this.ocrUnitMode[mode] || 'word';
+  }
+
+  updateOCRLanguageUI() {
+    const mode = this.getOCRLanguageMode();
+    const unitMode = this.getOCRUnitMode();
+    const toggle = document.getElementById('ocr-unit-toggle');
+    const hint = document.getElementById('ocr-language-hint');
+    const note = document.getElementById('ocr-language-note');
+    if (toggle) {
+      toggle.hidden = mode === 'bilingual';
+      toggle.textContent = mode === 'chinese'
+        ? (unitMode === 'word' ? '逐个词语 · 切换整句' : '短语/整句 · 切换逐词')
+        : (unitMode === 'word' ? '逐个单词 · 切换整句' : '短语/整句 · 切换逐词');
+      toggle.setAttribute('aria-pressed', String(mode !== 'bilingual' && unitMode === 'group'));
+      toggle.title = unitMode === 'word' ? '当前逐词；点击保留短语和整句' : '当前保留短语整句；点击逐词拆开';
+    }
+    if (hint) hint.textContent = mode === 'bilingual'
+      ? '中英文都保留，词组和整句不拆；同一行的英汉释义尽量配对。'
+      : mode === 'english'
+        ? (unitMode === 'word' ? '只留英文，默认按单词拆；右侧可切换保留整句。' : '只留英文，保留短语和整句。')
+        : (unitMode === 'word' ? '只留中文，默认按词语分；右侧可切换保留整句。' : '只留中文，保留短语和整句。');
+    if (note) note.textContent = mode === 'bilingual'
+      ? '全保留：中英文词条及紧邻释义都进入预览'
+      : mode === 'english'
+        ? '仅英文：' + (unitMode === 'word' ? '按单词分开' : '保留短语和整句')
+        : '仅中文：' + (unitMode === 'word' ? '按词语分开，可在预览中校正' : '保留短语和整句，可在预览中校正');
+    this.updateImportParseButton();
+  }
+
+  reparseOCRText() {
+    const raw = document.getElementById('ocr-raw-text');
+    if (raw) this.rawOCRText = raw.value;
+    if (!this.rawOCRText.trim()) {
+      showToast('暂无 OCR 原文可重解析', 'warning');
+      return;
+    }
+    this.parsedWords = this.parseOCRWords(this.rawOCRText);
+    this._selectedPreviewUids.clear();
+    if (!this.parsedWords.length) {
+      const preview = document.getElementById('import-preview');
+      if (preview) preview.classList.add('hidden');
+      showToast('当前范围未识别到有效条目，原文仍可修改后重试', 'warning');
+      return;
+    }
+    this.showPreview();
+    const scopeName = { bilingual: '全保留', english: '仅英文', chinese: '仅中文' }[this.getOCRLanguageMode()];
+    showToast('已按' + scopeName + (this.getOCRLanguageMode() === 'bilingual' ? '' : ' · ' + (this.getOCRUnitMode() === 'word' ? '逐词' : '短语/整句')) + '重新解析');
   }
 
   // ===== Example sentence source =====
@@ -8222,100 +9254,16 @@ class ImportMode {
   // (meaning + example/mnemonic are generated); otherwise require "word meaning".
   parseInput(text) {
     if (!this.usesModel(this.exampleSource)) return parseImportText(text);
-    const lines = text.replace(/\r\n/g, '\n').split('\n').map(l => l.trim()).filter(Boolean);
-    const out = [];
-    for (const line of lines) {
-      const m = line.match(/^([a-zA-Z]+(?:[-'][a-zA-Z]+)*)\s*(.*)$/);
-      if (!m) continue;
-      const rest = (m[2] || '').trim();
-      out.push({
-        word: m[1],
-        meaning: /[一-龥]/.test(rest) ? rest : '',
-        sentence: ''
-      });
-    }
-    return out;
+    // AI mode accepts bare words, phrases, sentences, and optional inline meanings.
+    return parseFlexibleImportText(text, { languageMode: 'bilingual', allowEmptyMeaning: true });
   }
 
-  // Parse OCR result: extract English words from multi-column word lists.
-  // Handles layout where one line may contain multiple "word + meaning" pairs
-  // (e.g. "abandon 放弃  ability 能力  absorb 吸收").
+  // OCR scope affects only OCR import; manual import keeps its own parser.
   parseOCRWords(text) {
-    const lines = text.replace(/\r\n/g, '\n').split('\n')
-      .map(l => l.trim()
-        .replace(/^#+\s*/, '').replace(/\*\*/g, '')
-        .replace(/^\|\s*|\s*\|$/g, '').replace(/^[-*]\s+/, '').trim())
-      .filter(Boolean);
-    const out = [];
-    const seen = new Set();
-
-    const isEnglish = (ch) => /[a-zA-Z'\-]/.test(ch);
-    const isChinese = (ch) => /[\u4e00-\u9fff]/.test(ch);
-
-    for (const line of lines) {
-      let i = 0;
-      const len = line.length;
-
-      while (i < len) {
-        // Skip whitespace and separators
-        while (i < len && /[\s\|\t\-–—:：.,;。，；]/.test(line[i])) i++;
-        if (i >= len) break;
-
-        // If next char is not English, skip it (probably Chinese noise / number)
-        if (!isEnglish(line[i])) {
-          // Skip until next whitespace or English letter
-          while (i < len && !isEnglish(line[i]) && !/\s/.test(line[i])) i++;
-          continue;
-        }
-
-        // Extract English word
-        let wordStart = i;
-        while (i < len && isEnglish(line[i])) i++;
-        let word = line.slice(wordStart, i).trim();
-        // Clean trailing period / stray chars
-        word = word.replace(/[.]+$/, '').trim();
-
-        if (word.length < 2 && !['a', 'I'].includes(word)) {
-          continue;
-        }
-
-        // Skip whitespace / separators after the word
-        let sepStart = i;
-        while (i < len && /[\s\|\t\-–—:：.,;。，；]/.test(line[i])) i++;
-        const sepLen = i - sepStart;
-
-        // Try to extract Chinese meaning after the word
-        let meaning = '';
-        let confidence = 0.5;
-
-        if (i < len && isChinese(line[i])) {
-          // Extract Chinese meaning: read until next English word or end of line
-          let meaningStart = i;
-          while (i < len && !isEnglish(line[i])) {
-            // Stop at certain punctuation that likely separates entries
-            if (/[\|\t]/.test(line[i])) break;
-            i++;
-          }
-          meaning = line.slice(meaningStart, i)
-            .replace(/[\s\-–—:：.,;。，；]+$/, '')
-            .trim();
-          confidence = meaning.length > 0 ? 0.9 : 0.6;
-        } else if (sepLen >= 2 || /\t/.test(line.slice(sepStart, i))) {
-          // Clear separator but no Chinese — might be English definition
-          // Skip the rest of this "entry" until next English word
-          while (i < len && !isEnglish(line[i])) i++;
-          confidence = 0.5;
-        }
-        // else: word immediately followed by another English word (sepLen < 2)
-        // treat as standalone word, low confidence
-
-        if (seen.has(word.toLowerCase())) continue;
-        seen.add(word.toLowerCase());
-
-        out.push({ word, meaning, sentence: '', confidence });
-      }
-    }
-    return out;
+    return parseOCRImportText(text, {
+      languageMode: this.getOCRLanguageMode(),
+      unitMode: this.getOCRUnitMode()
+    });
   }
 
   // Fill in example sentences / memory aids for parsedWords based on the source.
@@ -8377,9 +9325,11 @@ class ImportMode {
 
     selects.forEach(select => {
       if (!select) return;
+      const selectedId = select.value;
       select.innerHTML = books.map(b =>
-        `<option value="${b.id}">${b.name}</option>`
+        `<option value="${b.id}">${escapeHtml(b.name)}</option>`
       ).join('') + '<option value="__new__">+ 新建单词书</option>';
+      if (selectedId && [...select.options].some(option => option.value === selectedId)) select.value = selectedId;
     });
 
     // Attach change listener for "new book" option
@@ -8389,6 +9339,7 @@ class ImportMode {
       const newSelect = select.cloneNode(true);
       select.parentNode.replaceChild(newSelect, select);
       newSelect.addEventListener('change', (e) => {
+        if (e.target.id === 'preview-book-select') this._previewBookChosen = true;
         if (e.target.value === '__new__') {
           this.createBookFromSelect(e.target);
         }
@@ -8407,8 +9358,9 @@ class ImportMode {
     try {
       const newId = await db.addBook({ name: name.trim(), createdAt: Date.now() });
       await this.loadBookSelects();
-      // Select the newly created book
-      selectEl.value = newId;
+      // loadBookSelects clones the selects; update the live replacement.
+      const liveSelect = document.getElementById(selectEl.id);
+      if (liveSelect) liveSelect.value = String(newId);
       showToast('单词书已创建');
     } catch (err) {
       showToast('创建失败', 'error');
@@ -8443,7 +9395,7 @@ class ImportMode {
   updateImportParseButton() {
     const parseBtn = document.getElementById('import-parse-btn');
     if (!parseBtn) return;
-    parseBtn.classList.toggle('hidden', this.currentTab !== 'ocr');
+    parseBtn.classList.toggle('hidden', this.currentTab !== 'ocr' || this.getOCRLanguageMode() === 'chinese');
     parseBtn.textContent = '解析单词';
   }
 
@@ -8455,6 +9407,7 @@ class ImportMode {
     }
 
     this.parsedWords = this.parseInput(input.value);
+    this._previewBookChosen = false;
     if (this.parsedWords.length === 0) {
       showToast('未解析到有效单词，请检查格式', 'error');
       return;
@@ -8549,25 +9502,37 @@ class ImportMode {
       const { text, source } = await ocrEngine.recognize(file, (message, percent) => {
         progressBar.style.width = `${Math.round(percent)}%`;
         progressText.textContent = message || `识别中... ${Math.round(percent)}%`;
-      }, { onSlow });
+      }, { onSlow, languageMode: this.getOCRLanguageMode() });
 
-      progressText.textContent = '智谱识别完成，DeepSeek 正在去重纠错...';
-      const roughWords = this.parseOCRWords(text);
+      this.rawOCRText = String(text || '');
+      const rawEditor = document.getElementById('ocr-raw-text');
+      const rawPanel = document.getElementById('ocr-raw-panel');
+      if (rawEditor) rawEditor.value = this.rawOCRText;
+      if (rawPanel) rawPanel.classList.toggle('hidden', !this.rawOCRText.trim());
+      progressText.textContent = '识别完成，正在整理结果...';
+      const roughWords = this.parseOCRWords(this.rawOCRText);
       let refinedWords = [];
-      if (source === 'glm') {
+      // All-preserve must never lose raw OCR entries when AI returns a partial list.
+      // In single-language word mode AI output is only used to fill existing entries.
+      if (source === 'glm' && this.getOCRLanguageMode() === 'bilingual') {
         try {
-          refinedWords = await llmService.refineOCRText(text);
+          refinedWords = await llmService.refineOCRText(this.rawOCRText, this.getOCRLanguageMode(), this.getOCRUnitMode());
         } catch (refineError) {
-          console.warn('DeepSeek OCR cleanup failed, keeping GLM result:', refineError);
-          showToast('DeepSeek 校准失败，已保留智谱识别结果', 'warning');
+          console.warn('DeepSeek OCR cleanup failed, keeping OCR result:', refineError);
+          showToast('DeepSeek 校准失败，已保留 OCR 识别结果', 'warning');
         }
       }
-      const usedDeepSeek = refinedWords.length >= 5;
-      this.parsedWords = usedDeepSeek ? refinedWords : roughWords;
+      const corrections = new Map(refinedWords.map(item => [item.word.toLowerCase(), item]));
+      this.parsedWords = roughWords.map(item => {
+        const correction = corrections.get(item.word.toLowerCase());
+        return correction && !item.meaning && correction.meaning
+          ? { ...item, meaning: correction.meaning, confidence: Math.max(item.confidence, 0.85) } : item;
+      });
+      this._selectedPreviewUids.clear();
 
       if (sourceTag) {
         sourceTag.textContent = source === 'glm'
-          ? (usedDeepSeek ? 'GLM-OCR + DeepSeek 校准' : 'GLM-OCR')
+          ? (refinedWords.length ? 'GLM-OCR + DeepSeek 补释' : 'GLM-OCR')
           : (source === 'custom' ? '自定义 OCR' : '本地 Tesseract');
         sourceTag.className = `ocr-source-tag ${source}`;
       }
@@ -8581,14 +9546,15 @@ class ImportMode {
       // Get selected book
       const select = document.getElementById('import-book-select');
       this.importBookId = select ? parseInt(select.value) : null;
+      this._previewBookChosen = false;
 
       // Show preview first (non-blocking)
-      progressText.textContent = `已识别 ${this.parsedWords.length} 个单词`;
+      progressText.textContent = `已识别 ${this.parsedWords.length} 个条目`;
       progressBar.style.width = '100%';
       this.showPreview();
 
       const lowConf = this.parsedWords.filter(w => (w.confidence || 0) < 0.65).length;
-      let toastMsg = `已识别 ${this.parsedWords.length} 个单词`;
+      let toastMsg = `已识别 ${this.parsedWords.length} 个条目`;
       if (source === 'glm' && lowConf > 0) {
         toastMsg += `（${lowConf} 个需确认）`;
       }
@@ -8841,8 +9807,14 @@ class ImportMode {
 
     if (!preview || !list) return;
 
-    // Refresh book select for preview
-    this.loadBookSelects();
+    // Refresh book select for preview while keeping the user's chosen book.
+    this.loadBookSelects().then(() => {
+      const previewSelect = document.getElementById('preview-book-select');
+      if (previewSelect && !this._previewBookChosen && this.importBookId != null) {
+        const desired = String(this.importBookId);
+        if ([...previewSelect.options].some(option => option.value === desired)) previewSelect.value = desired;
+      }
+    }).catch(error => console.warn('Book options refresh failed:', error));
 
     const attr = (s) => escapeHtml(s || '').replace(/"/g, '&quot;');
     const memMode = this.exampleSource === 'mem' || this.parsedWords.some(w => w.mnemonic);
@@ -8887,9 +9859,16 @@ class ImportMode {
         aiBadge = `<span class="ai-badge ai-pending" title="等待 AI 校验中">⟳ 校验中...</span>`;
       }
 
+      const uid = w.uid || (w.uid = makeImportUid());
+      const checked = this._selectedPreviewUids.has(uid) ? ' checked' : '';
       return `
-      <div class="preview-item ${confClass} ai-status-${aiStatus}" data-index="${i}">
+      <div class="preview-item ${confClass} ai-status-${aiStatus}" data-index="${i}" data-uid="${attr(uid)}">
         <div class="preview-top-row">
+          <label class="preview-select" title="选择条目">
+            <input type="checkbox" class="preview-check" data-uid="${attr(uid)}"${checked}>
+            <span>选择</span>
+          </label>
+          <span class="preview-type">${attr(w.type || importEntryType(w.word))}</span>
           <span class="conf-badge ${confClass}" title="置信度 ${Math.round(conf * 100)}%">${confLabel}</span>
           ${aiBadge}
         </div>
@@ -8912,6 +9891,15 @@ class ImportMode {
       </div>
     `;
     }).join('');
+
+    list.querySelectorAll('.preview-check').forEach(check => {
+      check.addEventListener('change', (e) => {
+        const uid = e.currentTarget.dataset.uid;
+        if (e.currentTarget.checked) this._selectedPreviewUids.add(uid);
+        else this._selectedPreviewUids.delete(uid);
+        this.updatePreviewSummary();
+      });
+    });
 
     // Bind delete buttons
     list.querySelectorAll('.preview-delete').forEach(btn => {
@@ -8936,11 +9924,84 @@ class ImportMode {
     });
 
     preview.classList.remove('hidden');
+    this.updatePreviewSummary();
   }
 
   removePreviewItem(index) {
+    this.syncPreviewEditsToParsedWords();
     this.parsedWords.splice(index, 1);
+    this._selectedPreviewUids.clear();
     this.showPreview();
+  }
+
+  updatePreviewSummary() {
+    const summary = document.getElementById('preview-summary');
+    if (!summary) return;
+    const selected = this.parsedWords.filter(item => this._selectedPreviewUids.has(item.uid)).length;
+    const missing = this.parsedWords.filter(item => !String(item.meaning || '').trim()).length;
+    summary.textContent = missing
+      ? '共 ' + this.parsedWords.length + ' 个条目，' + missing + ' 个待补释义，已选 ' + selected + ' 个'
+      : '共 ' + this.parsedWords.length + ' 个条目，已选 ' + selected + ' 个';
+  }
+
+  mergeSelectedPreviewItems() {
+    this.syncPreviewEditsToParsedWords();
+    const selected = this.parsedWords.filter(item => this._selectedPreviewUids.has(item.uid));
+    if (selected.length < 2) {
+      showToast('请至少选择两个条目后再合并', 'warning');
+      return;
+    }
+    const firstIndex = this.parsedWords.indexOf(selected[0]);
+    const word = selected.map(item => item.word).join(' ');
+    const meaning = [...new Set(selected.map(item => String(item.meaning || '').trim()).filter(Boolean))].join('；');
+    const merged = {
+      ...selected[0],
+      uid: makeImportUid(),
+      word,
+      meaning,
+      type: importOCRItemType(word, importIsValidChinese(word) ? 'chinese' : 'english', 'group'),
+      confidence: Math.min(...selected.map(item => item.confidence ?? 0.8)),
+      sentence: selected.find(item => item.sentence)?.sentence || '',
+      sentenceCn: selected.find(item => item.sentenceCn)?.sentenceCn || ''
+    };
+    this.parsedWords = this.parsedWords.filter(item => !this._selectedPreviewUids.has(item.uid));
+    this.parsedWords.splice(firstIndex, 0, merged);
+    this._selectedPreviewUids.clear();
+    this.showPreview();
+    showToast('已合并选中条目');
+  }
+
+  splitSelectedPreviewItem() {
+    this.syncPreviewEditsToParsedWords();
+    const selected = this.parsedWords.filter(item => this._selectedPreviewUids.has(item.uid));
+    if (selected.length !== 1) {
+      showToast('拆分时请选择一个条目', 'warning');
+      return;
+    }
+    const item = selected[0];
+    const seed = item.word + (item.meaning ? ' ' + item.meaning : '');
+    const ocr = this.currentTab === 'ocr';
+    const promptText = ocr && this.getOCRLanguageMode() === 'chinese'
+      ? '请输入拆分后的中文词条，每行一个'
+      : '请输入拆分后的条目，每行一个；英文可写成“英文 中文释义”';
+    const input = window.prompt(promptText, seed);
+    if (!input || !input.trim()) return;
+    const parts = ocr ? parseOCRImportText(input, { languageMode: this.getOCRLanguageMode(), unitMode: 'group' })
+      : parseFlexibleImportText(input, { languageMode: 'bilingual', allowEmptyMeaning: true });
+    if (parts.length < 2) {
+      showToast('至少需要拆出两个有效条目', 'warning');
+      return;
+    }
+    parts.forEach(part => {
+      part.sentence = item.sentence || '';
+      part.sentenceCn = item.sentenceCn || '';
+      part.confidence = Math.min(item.confidence ?? 0.8, 0.85);
+    });
+    const index = this.parsedWords.indexOf(item);
+    this.parsedWords.splice(index, 1, ...parts);
+    this._selectedPreviewUids.clear();
+    this.showPreview();
+    showToast('已拆分条目');
   }
 
   async confirmImport() {
@@ -8949,6 +10010,8 @@ class ImportMode {
     // Collect edited data
     const items = document.querySelectorAll('.preview-item');
     const wordsToImport = [];
+    // OCR-only entries (English or Chinese) can be saved without inventing translations.
+    const allowEmptyMeaning = this.currentTab === 'ocr';
 
     items.forEach(item => {
       const word = item.querySelector('.preview-word').value.trim();
@@ -8959,14 +10022,34 @@ class ImportMode {
       const sentenceCn = cnEl ? cnEl.value.trim() : '';
       const memEl = item.querySelector('.preview-mnemonic');
       const mnemonic = memEl ? memEl.value.trim() : '';
+      const original = this.parsedWords.find(entry => entry.uid === item.dataset.uid);
+      const type = original?.word === word && original?.type ? original.type
+        : importOCRItemType(word, importIsValidChinese(word) ? 'chinese' : 'english', 'group');
 
-      if (word && meaning) {
-        wordsToImport.push({ word, meaning, sentence, sentenceCn, mnemonic });
+      if (word) {
+        wordsToImport.push({ word, meaning, sentence, sentenceCn, mnemonic, type });
       }
     });
 
+    const missingMeaning = wordsToImport.filter(item => !item.meaning).length;
+    if (missingMeaning && !allowEmptyMeaning) {
+      showToast(`有 ${missingMeaning} 个条目缺少中文释义，请补全后再导入`, 'warning');
+      return;
+    }
+
+    const seen = new Set();
+    const uniqueWords = wordsToImport.filter(item => {
+      const key = item.word.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    if (uniqueWords.length !== wordsToImport.length) showToast('已自动去除重复条目', 'warning');
+    wordsToImport.length = 0;
+    wordsToImport.push(...uniqueWords);
+
     if (wordsToImport.length === 0) {
-      showToast('没有有效的单词可导入', 'warning');
+      showToast('没有有效的条目可导入', 'warning');
       return;
     }
 
@@ -8977,7 +10060,7 @@ class ImportMode {
       // Fetch phonetics
       if (confirmBtn) confirmBtn.textContent = '获取音标中...';
       const phoneticResults = await phoneticsService.batchFetchPhonetics(
-        wordsToImport.map(w => w.word),
+        wordsToImport.filter(w => importIsValidEnglish(w.word)).map(w => w.word),
         (completed, total) => {
           if (confirmBtn) confirmBtn.textContent = `获取音标 ${completed}/${total}...`;
         }
@@ -8999,7 +10082,7 @@ class ImportMode {
       if (confirmBtn) confirmBtn.textContent = '导入中...';
       await db.batchImport(wordsToImport, bookId);
 
-      showToast(`成功导入 ${wordsToImport.length} 个单词`);
+      showToast(`成功导入 ${wordsToImport.length} 个条目`);
       this.clearPreview();
 
       // Clear manual input
@@ -9021,8 +10104,9 @@ class ImportMode {
     const items = document.querySelectorAll('.preview-item');
     if (!items || items.length === 0) return;
     items.forEach(item => {
+      const uid = item.dataset.uid;
       const index = parseInt(item.dataset.index, 10);
-      const w = this.parsedWords[index];
+      const w = this.parsedWords.find(entry => entry.uid === uid) || this.parsedWords[index];
       if (!w) return;
       const wordInput = item.querySelector('.preview-word');
       const meaningInput = item.querySelector('.preview-meaning');
@@ -9038,6 +10122,10 @@ class ImportMode {
   }
 
   async parseAndFillWords() {
+    if (this.currentTab === 'ocr' && this.parsedWords.some(item => importIsValidChinese(item.word))) {
+      showToast('中文词条请在预览里校正；此处的在线词典与 AI 解析仅支持英文', 'warning');
+      return;
+    }
     if (!this.parsedWords || this.parsedWords.length === 0) {
       showToast('请先导入单词', 'warning');
       return;
@@ -9194,6 +10282,13 @@ class ImportMode {
 
   clearPreview() {
     this.parsedWords = [];
+    this.rawOCRText = '';
+    this._selectedPreviewUids.clear();
+    this._previewBookChosen = false;
+    const rawPanel = document.getElementById('ocr-raw-panel');
+    const rawEditor = document.getElementById('ocr-raw-text');
+    if (rawPanel) rawPanel.classList.add('hidden');
+    if (rawEditor) rawEditor.value = '';
     const preview = document.getElementById('import-preview');
     if (preview) preview.classList.add('hidden');
   }
@@ -9414,10 +10509,11 @@ class App {
 
       // Stats
       const total = words.length;
-      const mastered = words.filter(w => (w.correctCount || 0) >= 3).length;
+      const mastered = words.filter(w => settings.isMastered(w)).length;
       const todayRecords = records.filter(r => r.date >= startOfToday);
       const todayLearn = todayRecords.length; // any review/learn today
       const todayReview = todayRecords.filter(r => {
+        if (typeof r.isReview === 'boolean') return r.isReview;
         const w = words.find(x => x.id === r.wordId);
         return w && (w.reviewCount || 0) > 1; // not first time
       }).length;
@@ -9972,6 +11068,109 @@ window.studyMode = studyMode;
 window.reviewMode = reviewMode;
 window.importMode = importMode;
 
+</script>
+<script>
+(function () {
+  const canvas = document.createElement("canvas");
+  canvas.id = "mv-particles";
+  canvas.setAttribute("aria-hidden", "true");
+  document.body.prepend(canvas);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const dots = [];
+  const mouse = { x: innerWidth / 2, y: innerHeight / 2, active: false };
+  let scale = Math.min(window.devicePixelRatio || 1, 2);
+  const resize = () => {
+    scale = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(innerWidth * scale);
+    canvas.height = Math.round(innerHeight * scale);
+    canvas.style.width = innerWidth + "px";
+    canvas.style.height = innerHeight + "px";
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  };
+  let particleColor = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#FFB25A";
+  const refreshParticleColor = () => {
+    particleColor = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#FFB25A";
+  };
+  if (typeof MutationObserver === "function") {
+    const themeObserver = new MutationObserver(refreshParticleColor);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  }
+  const seed = () => {
+    dots.length = 0;
+    const count = Math.min(90, Math.round(innerWidth * innerHeight / 18000));
+    for (let i = 0; i < count; i += 1) {
+      dots.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: 0.7 + Math.random() * 1.8, vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25 });
+    }
+  };
+  resize(); seed();
+  addEventListener("resize", () => { resize(); seed(); });
+  addEventListener("pointermove", (event) => {
+    mouse.x = event.clientX; mouse.y = event.clientY; mouse.active = true;
+    const rawTarget = event.target;
+    const target = rawTarget && typeof rawTarget.closest === "function"
+      ? rawTarget.closest("button, .btn-glass, .nav-link, .start-btn, .dash-cta, .dash-action-btn, .import-tab, .toggle-btn, .theme-option, .known-btn")
+      : null;
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    target.style.setProperty("--glow-x", (event.clientX - rect.left) + "px");
+  });
+  addEventListener("pointerout", (event) => {
+    if (!event.relatedTarget) mouse.active = false;
+  });
+  const motionQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+  let running = !document.hidden && !motionQuery.matches;
+  let rafId = null;
+  const frame = () => {
+    rafId = null;
+    if (!running) return;
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    const color = particleColor;
+    for (const dot of dots) {
+      const dx = mouse.x - dot.x;
+      const dy = mouse.y - dot.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      if (mouse.active && dist < 180) {
+        dot.vx += dx / dist * 0.035;
+        dot.vy += dy / dist * 0.035;
+      }
+      dot.vx *= 0.96; dot.vy *= 0.96;
+      dot.x += dot.vx; dot.y += dot.vy;
+      if (dot.x < 0 || dot.x > innerWidth) dot.vx *= -1;
+      if (dot.y < 0 || dot.y > innerHeight) dot.vy *= -1;
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      ctx.globalAlpha = mouse.active && dist < 180 ? 0.85 : 0.28;
+      ctx.arc(dot.x, dot.y, dot.r + (mouse.active && dist < 140 ? 1.2 : 0), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (mouse.active) {
+      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 150);
+      glow.addColorStop(0, color);
+      glow.addColorStop(1, "transparent");
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 150, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    rafId = requestAnimationFrame(frame);
+  };
+  document.addEventListener("visibilitychange", () => {
+    running = !document.hidden && !motionQuery.matches;
+    if (running && rafId === null) rafId = requestAnimationFrame(frame);
+    if (!running && rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  });
+  const motionChanged = () => {
+    running = !document.hidden && !motionQuery.matches;
+    if (running && rafId === null) rafId = requestAnimationFrame(frame);
+    if (!running && rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  };
+  if (motionQuery.addEventListener) motionQuery.addEventListener("change", motionChanged);
+  else if (motionQuery.addListener) motionQuery.addListener(motionChanged);
+  if (running) rafId = requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
