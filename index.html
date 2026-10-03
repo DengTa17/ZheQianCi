@@ -3678,23 +3678,28 @@ select.input-glass {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  padding: 0.5rem 0 1rem;
+  min-width: 0;
+  padding: 1.5rem;
+  overflow-wrap: anywhere;
 }
 
 .storage-intro h3 {
   margin-bottom: 0.45rem;
   font-family: var(--font-heading);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
+  line-height: 1.45;
 }
 
 .storage-intro p,
 .storage-note {
   color: var(--text-secondary);
-  line-height: 1.7;
+  font-size: 0.9rem;
+  line-height: 1.75;
 }
 
 .storage-status {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -3705,6 +3710,7 @@ select.input-glass {
 
 .storage-status-main {
   display: flex;
+  flex: 1 1 16rem;
   align-items: center;
   gap: 0.65rem;
   min-width: 0;
@@ -3724,6 +3730,7 @@ select.input-glass {
 }
 
 .storage-status-copy {
+  flex: 1;
   min-width: 0;
 }
 
@@ -3731,14 +3738,28 @@ select.input-glass {
   display: block;
   color: var(--text-primary);
   font-weight: 650;
+  font-size: 0.95rem;
+  line-height: 1.55;
 }
 
 .storage-status-detail {
   display: block;
   margin-top: 0.2rem;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 0.82rem;
+  line-height: 1.65;
   overflow-wrap: anywhere;
+}
+
+.storage-status > .btn-glass {
+  flex: 0 0 auto;
+}
+
+.storage-panel .btn-glass {
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
 }
 
 .storage-actions {
@@ -3757,10 +3778,15 @@ select.input-glass {
 }
 
 .storage-auto-row input {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   flex: 0 0 auto;
   accent-color: var(--accent);
+}
+
+.storage-auto-copy {
+  flex: 1;
+  min-width: 0;
 }
 
 .storage-auto-copy strong,
@@ -3770,14 +3796,67 @@ select.input-glass {
 
 .storage-auto-copy small {
   margin-top: 0.2rem;
-  color: var(--text-tertiary);
-  line-height: 1.45;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.65;
 }
 
 .storage-note {
-  padding-left: 0.85rem;
+  padding: 0.65rem 0 0.65rem 0.85rem;
   border-left: 3px solid var(--accent);
   font-size: 0.86rem;
+}
+
+.storage-panel .data-management {
+  margin-top: 0.25rem;
+  padding-top: 1.25rem;
+}
+
+.storage-panel .data-management h4 {
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .import-tabs {
+    gap: 0.35rem;
+  }
+
+  .import-tab {
+    flex: 1;
+    min-width: 0;
+    padding: 0.65rem 0.4rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .storage-panel {
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .storage-status {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .storage-status-main {
+    flex: 1 1 auto;
+  }
+
+  .storage-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storage-actions > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .storage-panel .data-actions {
+    gap: 0.65rem;
+  }
 }
 
 /* ===== Responsive ===== */
@@ -4771,8 +4850,8 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: 0.04em; text-transform: none;
         <div class="import-panel" data-panel="storage">
           <div class="storage-panel">
             <div class="storage-intro">
-              <h3>本地文件夹自动备份</h3>
-              <p>选择电脑上的文件夹后，折千词会在浏览器本地存储之外，同步维护一份可恢复的数据文件。</p>
+              <h3>本地文件夹备份</h3>
+              <p>选择固定文件夹，备份单词本和学习记录。开启自动备份即可同步更新。</p>
             </div>
 
             <div class="storage-status" id="storage-status">
@@ -4780,7 +4859,7 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: 0.04em; text-transform: none;
                 <span class="storage-status-dot" aria-hidden="true"></span>
                 <span class="storage-status-copy">
                   <span class="storage-status-title" id="storage-status-title">尚未连接文件夹</span>
-                  <span class="storage-status-detail" id="storage-status-detail">数据目前仅保存在此浏览器中</span>
+                  <span class="storage-status-detail" id="storage-status-detail">数据仅保存在当前浏览器中</span>
                 </span>
               </div>
               <button class="btn-glass small" id="storage-select-folder">选择文件夹</button>
@@ -4789,18 +4868,18 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: 0.04em; text-transform: none;
             <label class="storage-auto-row" for="storage-auto-backup">
               <span class="storage-auto-copy">
                 <strong>自动备份</strong>
-                <small>单词本或学习记录发生变化后，自动更新备份文件。</small>
+                <small>数据更新后，自动保存到文件夹。</small>
               </span>
               <input type="checkbox" id="storage-auto-backup" disabled>
             </label>
 
             <div class="storage-actions">
               <button class="btn-glass" id="storage-backup-now" disabled>立即备份</button>
-              <button class="btn-glass secondary" id="storage-restore" disabled>从备份恢复</button>
-              <button class="btn-glass secondary" id="storage-disconnect" disabled>断开文件夹</button>
+              <button class="btn-glass secondary" id="storage-restore" disabled>恢复备份</button>
+              <button class="btn-glass secondary" id="storage-disconnect" disabled>断开连接</button>
             </div>
 
-            <p class="storage-note" id="storage-note">建议选择“文档”中的固定文件夹。浏览器或电脑管家清理网站数据时，这个普通文件不会一起被删除。</p>
+            <p class="storage-note" id="storage-note">建议使用“文档”中的固定文件夹。清理网站数据不会删除此处的备份文件。</p>
 
             <div class="data-management">
               <h4>手动备份</h4>
@@ -7268,7 +7347,7 @@ class LocalBackupService {
       ? (this.backupNeedsReview
         ? '已有备份，自动备份已暂停；请先恢复，或点击立即备份确认覆盖'
         : Number.isFinite(last) ? `最近备份：${new Date(last).toLocaleString()}` : `将创建 ${BACKUP_FILE_NAME}`)
-      : (supported ? '数据目前仅保存在此浏览器中' : '仍可使用下方的手动导出与导入');
+      : (supported ? '数据仅保存在当前浏览器中' : '仍可使用下方的手动导出与导入');
 
     if (selectButton) {
       selectButton.disabled = !supported;
